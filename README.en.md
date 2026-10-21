@@ -13,6 +13,8 @@ A mobile port of the open-source game **[IP, PLEASE](https://github.com/ip-pleas
 
 - **This mobile port**: [zhcalvin/ip-please-mobile](https://github.com/zhcalvin/ip-please-mobile)
 - **Release page**: [GitHub Releases](https://github.com/zhcalvin/ip-please-mobile/releases)
+- **Play online**: [IP, PLEASE in your browser](https://momoyu.ltd/play/ip-please/)
+- **More games**: [Momoyu arcade](https://momoyu.ltd/) — including Mario, The Simpsons and GTA.
 - **Original source**: [ip-please/ip-please.github.io](https://github.com/ip-please/ip-please.github.io)
 - **Original browser game**: [ip-please.github.io](https://ip-please.github.io)
 - **Original copyright holder**: ctnyanya, credited in [LICENSE](LICENSE)

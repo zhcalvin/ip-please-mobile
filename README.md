@@ -13,6 +13,8 @@
 
 - **本移植版源码**：[zhcalvin/ip-please-mobile](https://github.com/zhcalvin/ip-please-mobile)
 - **发布页**：[GitHub Releases](https://github.com/zhcalvin/ip-please-mobile/releases)
+- **在线体验**：[IP, PLEASE 网页版](https://momoyu.ltd/play/ip-please/)
+- **更多游戏**：[摸摸鱼游戏站](https://momoyu.ltd/)（包含马里奥、辛普森、GTA 等游戏）
 - **原项目源码**：[ip-please/ip-please.github.io](https://github.com/ip-please/ip-please.github.io)
 - **原版在线体验**：[ip-please.github.io](https://ip-please.github.io)
 - **原作者版权署名**：ctnyanya，保留于 [LICENSE](LICENSE)
