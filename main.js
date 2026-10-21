@@ -15,12 +15,16 @@ function go(name) {
 
 // ———————————————————— 输入 ————————————————————
 
+let activePointerId = null;
+
 function toGame(ev) {
   const r = canvasEl.getBoundingClientRect();
   return [Math.floor((ev.clientX - r.left) * W / r.width), Math.floor((ev.clientY - r.top) * H / r.height)];
 }
 
 function onDown(ev) {
+  if (gamePaused || activePointerId !== null || ev.isPrimary === false || ev.button > 0) return;
+  activePointerId = ev.pointerId;
   SFX.init();
   const [x, y] = toGame(ev);
   Object.assign(ptr, { x, y, down: true, mouse: ev.pointerType === 'mouse' });
@@ -31,15 +35,28 @@ function onDown(ev) {
 }
 
 function onMove(ev) {
+  if (gamePaused || ev.isPrimary === false || (activePointerId !== null && ev.pointerId !== activePointerId)) return;
   const [x, y] = toGame(ev);
   Object.assign(ptr, { x, y, mouse: ev.pointerType === 'mouse' });
   if (drag) dragMove(x, y);
 }
 
 function onUp(ev) {
+  if (ev.pointerId !== activePointerId) return;
+  activePointerId = null;
   const [x, y] = toGame(ev);
   Object.assign(ptr, { x, y, down: false });
   if (drag) dragEnd(x, y);
+}
+
+function cancelInput(ev) {
+  if (ev && ev.pointerId !== activePointerId) return;
+  if (drag) { Object.assign(drag.d, drag.prev); drag = null; }
+  if (activePointerId !== null && canvasEl && canvasEl.hasPointerCapture(activePointerId)) {
+    canvasEl.releasePointerCapture(activePointerId);
+  }
+  activePointerId = null;
+  ptr.down = false;
 }
 
 function boothInput(x, y) {
@@ -201,15 +218,42 @@ function render() {
 
 const inChat = () => B.cut && now >= B.cut.t0;
 
+let gamePaused = false, gameReady = false, nativePaused = !!window.__IP_PLEASE_NATIVE_PAUSED__;
+let pageHidden = false, frameId = null, lastFrame = null;
+
+// Use active play time: returning from the home screen must not advance dialogue or timers.
+function syncGamePause() {
+  gamePaused = document.hidden || pageHidden || nativePaused;
+  SFX.setPaused(gamePaused);
+  if (gamePaused) {
+    cancelInput();
+    if (frameId !== null) cancelAnimationFrame(frameId);
+    frameId = null;
+    lastFrame = null;
+  } else if (gameReady && frameId === null) {
+    lastFrame = null;
+    frameId = requestAnimationFrame(loop);
+  }
+}
+
+function setNativePaused(paused) {
+  nativePaused = !!paused;
+  syncGamePause();
+}
+
 function loop(ts) {
-  now = ts / 1000;
+  frameId = null;
+  if (gamePaused) return;
+  if (lastFrame !== null) now += (ts - lastFrame) / 1000;
+  lastFrame = ts;
   update();
   render();
-  requestAnimationFrame(loop);
+  frameId = requestAnimationFrame(loop);
 }
 
 function fit() {
-  const s = Math.min(window.innerWidth / W, window.innerHeight / H);
+  const bounds = document.getElementById('viewport').getBoundingClientRect();
+  const s = Math.min(bounds.width / W, bounds.height / H);
   canvasEl.style.width = `${Math.floor(W * s)}px`;
   canvasEl.style.height = `${Math.floor(H * s)}px`;
 }
@@ -227,6 +271,7 @@ function updateMuteLabel() {
 
 function boot() {
   canvasEl = document.getElementById('game');
+  document.documentElement.toggleAttribute('data-native', !!window.__IP_PLEASE_NATIVE__ || new URLSearchParams(window.location.search).get('native') === '1');
   applyDomLang();
   canvasEl.width = W; canvasEl.height = H;
   [F] = makeCanvas(W, H);
@@ -235,11 +280,16 @@ function boot() {
   canvasEl.addEventListener('pointerdown', onDown);
   window.addEventListener('pointermove', onMove);
   window.addEventListener('pointerup', onUp);
-  window.addEventListener('pointercancel', onUp);
+  window.addEventListener('pointercancel', cancelInput);
+  canvasEl.addEventListener('lostpointercapture', cancelInput);
+  document.addEventListener('visibilitychange', syncGamePause);
+  window.addEventListener('pagehide', () => { pageHidden = true; syncGamePause(); });
+  window.addEventListener('pageshow', () => { pageHidden = false; syncGamePause(); });
   canvasEl.addEventListener('contextmenu', (e) => e.preventDefault());
   window.addEventListener('keydown', (e) => { if (e.key === 'm' || e.key === 'M') toggleMute(); });
   newGame();
-  loadImages().then(() => { sceneT0 = performance.now() / 1000; requestAnimationFrame(loop); });
+  syncGamePause();
+  loadImages().then(() => { sceneT0 = now; gameReady = true; syncGamePause(); });
 }
 
 window.addEventListener('DOMContentLoaded', boot);

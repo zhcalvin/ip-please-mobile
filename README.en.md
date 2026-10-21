@@ -1,105 +1,141 @@
 <p align="center">
-  <a href="https://ip-please.github.io"><img src="media/logo.png" width="160" alt="IP, PLEASE"></a>
+  <img src="media/logo.png" width="160" alt="IP, PLEASE">
 </p>
 
-<h1 align="center">IP, PLEASE</h1>
+<h1 align="center">IP, PLEASE Mobile</h1>
 
 <p align="center">
-  <a href="README.md">简体中文</a> · <b>English</b>
+  <a href="README.md">简体中文</a> · <b>English</b><br>
+  Android / iOS port · Offline play · Landscape touch controls
 </p>
 
-<p align="center">
-  A Papers, Please–style pixel game.<br>
-  You won the October labor lottery and have been assigned to the Ministry of Alignment's UTC+8 Border Checkpoint as inspector Claude. Your only job: catch travelers pretending to be American.
-</p>
+A mobile port of the open-source game **[IP, PLEASE](https://github.com/ip-please/ip-please.github.io)**. The original game, story, pixel art, music and sound effects come from the upstream project. This repository adds native Android / iOS projects, mobile adaptations and build tools.
+
+- **This mobile port**: [zhcalvin/ip-please-mobile](https://github.com/zhcalvin/ip-please-mobile)
+- **Release page**: [GitHub Releases](https://github.com/zhcalvin/ip-please-mobile/releases)
+- **Original source**: [ip-please/ip-please.github.io](https://github.com/ip-please/ip-please.github.io)
+- **Original browser game**: [ip-please.github.io](https://ip-please.github.io)
+- **Original copyright holder**: ctnyanya, credited in [LICENSE](LICENSE)
+
+## Screenshots
+
+These five screenshots were captured on a Huawei DBY-W09 Android tablet on October 21, 2026, while running this mobile port.
 
 <p align="center">
-  <a href="https://ip-please.github.io"><b>▶ Play in your browser: ip-please.github.io</b></a><br>
-  <sub>Pick <b>English</b> on the first screen.</sub>
-</p>
-
-<p align="center">
-  <img src="media/gameplay-en.gif" width="640" alt="Gameplay: a traveler says “Hello, I am 美国人。”; inspection shows his timezone is Beijing Time; the quiz makes him blurt out the second half of a Chinese meme, and when the DENIED stamp lands his sunglasses slip">
+  <img src="media/screenshots/android-tablet-01.jpg" width="960" alt="IP, PLEASE title screen on an Android tablet">
   <br>
-  <sub>Day 2: “Hello, I am 美国人。”</sub>
+  <sub>Title screen</sub>
 </p>
 
-- 6 days, 2 endings, about 30 minutes; autosaves at the end of every day
-- English / 简体中文, chosen on the start screen
-- Drag papers with a mouse, or with your finger on a phone (landscape)
-- A plain static web page that loads nothing external; download the repo and double-click `index.html` to play offline
+| Daily newspaper | Border checkpoint |
+|:---:|:---:|
+| ![Daily newspaper announcing the border opening](media/screenshots/android-tablet-02.jpg) | ![Calling and greeting the first traveler](media/screenshots/android-tablet-03.jpg) |
+| **Rules and document inspection** | **Stamp controls** |
+| ![Checking the entry rules against a device entry card](media/screenshots/android-tablet-04.jpg) | ![Opening the stamp tray to approve or deny entry](media/screenshots/android-tablet-05.jpg) |
 
-## About the memes
+Original, unedited images are included in [`media/screenshots/`](media/screenshots/).
 
-The game started as a joke for the Chinese internet. Claude isn't available in mainland China, Hong Kong or Macau, so people there dress up as Americans: VPNs, US cards, US phone numbers, a system language switched to en-US. The disguise rarely survives contact with a Chinese meme.
+## Game and mobile features
 
-In the English version:
+Play as Claude, an inspector at the Ministry of Alignment's UTC+8 checkpoint. Compare IP addresses, timezones, languages and documents to uncover disguised travelers.
 
-- **Chinese slips stay in Chinese.** They are the evidence. You don't need to read “Hello, I am 美国人。” to know something is off.
-- **Quiz lines show the original plus a literal translation**, e.g. `宫廷玉液酒？ ("Palace jade wine?")`. Every Chinese person can finish the line; real Americans just say “Uh… bless you?”
-- **Each day's newspaper has a Translator's Note** explaining the memes of the day: Crazy Thursday and “V me 50”, proxy “airports”, America (UTC+8), and more.
+- The original six-day story, two endings and roughly 30-minute playthrough.
+- Simplified Chinese and English, selected at startup.
+- Call a traveler → drag documents onto the desk → inspect → stamp → return documents.
+- Native Android WebView and iOS WKWebView shells sharing the same game code, without third-party runtime libraries.
+- Bundled game assets for offline play, landscape touch controls, proportional scaling and safe-area layout.
+- Game time and audio pause while the app is in the background.
+- Original daily save checkpoints remain local to the device. After exiting or being terminated, the current day restarts from the last saved checkpoint.
 
-## How to play
+## Build and install
 
-Call the next traveler → drag their papers onto the desk → check them against the Constitution → stamp → hand the papers back.
+Common requirement: Node.js 20+. No `npm install` needed. See the [mobile build guide](mobile/README.md) for full setup and signing instructions.
 
-| Day | New rules / tools |
-|---|---|
-| 1 | Only IPs from supported regions get in |
-| 2 | Timezone and language must match the IP; quiz and detain |
-| 3 | Account card: payment card, billing address, phone number |
-| 4 | X-ray scan for background processes; the slang fast lane |
-| 5 | Majority Chinese-owned companies; the distillation swarm |
-| 6 | George Costava, final form; and the last traveler |
+### Android
 
-## Mods
+Requires JDK 17+, Android SDK Platform 35 and Build Tools 35.0.0. Supports Android 8.0+.
 
-The main game only takes bug fixes and experience improvements, not PRs that add game mechanics. So many people want to overhaul it, in so many different directions, that merging them all would make a patchwork, and there'd be no way to review them all.
+```bash
+node tools/mobile.mjs android          # Debug APK and Android Lint
+node tools/mobile.mjs android-release  # Signed release APK and Android Lint
+```
 
-If you have a new gameplay idea, you're very welcome to fork the game and publish it as your own mod, under your own name, so your idea stays whole. When it's ready, [submit it](https://github.com/ip-please/ip-please.github.io/issues/new?template=mod.yml) and it goes on the list below and on the Bilibili mod list. See [CONTRIBUTING.md](CONTRIBUTING.md#english) for how.
+- Debug APK: `build/mobile/IPPlease-debug.apk`.
+- Release APK: `build/releases/IPPlease-1.0.0-android.apk`, with a `.sha256` checksum file.
+- Release builds require your own signing configuration; keys and passwords are excluded from the open-source repository.
+- Upload the signed APK and checksum to GitHub Releases or your own website for distribution.
 
-| Mod | Author | About |
-|---|---|---|
-| [IP, PLEASE: Modder's Cut](https://erasercn.github.io/ip-please/)<br>[Source](https://github.com/EraserCN/ip-please) · [Apps](https://github.com/EraserCN/ip-please/releases) | [EraserCN](https://github.com/EraserCN) | Stretches the game to 12 days, with a wallbreaker storyline and multiple endings. Days 8–11 each bring a new rule and their own characters (fingerprint browsers, prompt injection, knockoff student IDs…). Android, iOS and macOS apps |
+Install the debug APK:
+
+```bash
+adb install -r build/mobile/IPPlease-debug.apk
+adb shell am start -n io.github.ipplease.game/.MainActivity
+```
+
+### iOS
+
+Requires macOS and Xcode. Supports iOS 15+, with iPhone and iPad projects.
+
+```bash
+node tools/mobile.mjs ios          # Simulator app
+node tools/mobile.mjs ios-device   # Unsigned device app
+```
+
+Open `mobile/ios/IPPlease.xcodeproj` and configure your Apple development team and signing to install on a device or distribute through TestFlight / the App Store.
+
+### Browser
+
+The root directory remains a standalone static game. Open `index.html` directly to play offline, or serve it locally:
+
+```bash
+python3 -m http.server 8000
+```
+
+Open <http://localhost:8000>.
 
 ## Files
 
-| Path | What's inside |
+| Path | Contents |
 |---|---|
-| `index.html` | The page |
-| `main.js` | Scene switching, input, main loop |
-| `booth.js` | The booth: papers, stamps, inspection mode, quiz, X-ray |
-| `events.js` | Slang fast lane, distillation swarm, account ban, endings |
-| `screens.js` | Intro, newspaper, end-of-day summary, credits, save |
-| `i18n.js` | Language switching `T()` and the language-select screen |
-| `en.js` | English translations (keyed by the original Chinese), Translator's Notes, slang glosses |
-| `data.js` | The script: each day's travelers, newspapers, random passers-by |
-| `docs.js` | Documents: passport, device card, account card, Constitution |
-| `gfx.js` / `sfx.js` | Pixel drawing / sound synthesis (all generated live, no audio files) |
-| `assets.js` | Pre-rendered characters, backgrounds and glyph atlas (generated by `tools/build_assets.py`; don't edit by hand) |
-| `tools/` | Asset tools: `pp/` draws the characters and scenes, `assets/fonts/` holds the pixel fonts; `check_en.js` finds missing translations |
-| `media/` | Logo and gameplay GIFs for the README, link preview card `og.png` |
+| `mobile/android/` | Native Android project and Gradle Wrapper |
+| `mobile/ios/` | Native iOS project, shared scheme and UI smoke test |
+| `mobile/README.md` | Build environment, signing, installation and save behavior |
+| `tools/mobile.mjs` | Offline asset staging, native builds and Android release packaging |
+| `tests/` | Regression tests for mobile input, lifecycle and build behavior |
+| `index.html` / `main.js` | Page, input, scene switching and main loop |
+| `booth.js` / `docs.js` | Checkpoint, documents, stamps and inspection tools |
+| `events.js` / `screens.js` | Events, intro, newspaper, summary, saves and endings |
+| `data.js` / `i18n.js` / `en.js` | Story, language selection and English translation |
+| `gfx.js` / `sfx.js` / `assets.js` | Pixel drawing, synthesized audio and generated assets |
+| `media/screenshots/` | Android tablet screenshots |
+| `tools/pp/` / `tools/assets/` | Upstream asset-generation tools and pixel fonts |
 
-## Editing and rebuilding assets
+`mobile/web/`, `build/` and native build outputs are generated files and excluded from Git.
 
-After changing in-game text (new Chinese characters must go into the glyph atlas) or how characters are drawn, regenerate `assets.js`:
-
-```bash
-pip install -r tools/requirements.txt
-python tools/build_assets.py
-```
-
-If you change a Chinese line, update the matching key in `en.js` too (it must match the Chinese exactly). To list anything missing:
+## Development and validation
 
 ```bash
+node --test tests/*.test.mjs
 node tools/check_en.js
 ```
 
-Local preview: run `python -m http.server` in the repo root and open <http://localhost:8000>.
+Validation includes core gameplay on an Android emulator, installation and launch on a Huawei tablet, iOS simulator smoke tests, and an unsigned iOS device build. Physical iOS installation has not been tested.
+
+### Editing and rebuilding assets
+
+After changing game text or pixel assets, use the upstream tools to regenerate assets and glyphs:
+
+```bash
+pip install -r tools/requirements.txt
+python3 tools/build_assets.py
+```
+
+Keep matching Chinese keys in `en.js` updated. `tools/mobile.mjs` stages the root game files before each native build so there is only one game implementation to maintain.
 
 ## Credits and license
 
-- A tribute to Lucas Pope's *Papers, Please*. This is a fan-made satire and every character is fictional. It mocks region-based blocking and the absurd disguises around it, not any ethnicity or group. Article 12 of the Constitution: judge the region, not the face.
-- All art, music and sound effects are generated by code written with Claude Code.
-- Code released under the [MIT](LICENSE) license.
-- Pixel font: [Fusion Pixel Font](https://github.com/TakWolf/fusion-pixel-font), SIL Open Font License 1.1 (see `OFL-fusion-pixel.txt`).
+- Based on [IP, PLEASE](https://github.com/ip-please/ip-please.github.io) by ctnyanya. The original copyright notice is preserved, with the scope of the mobile port described above.
+- The original game pays tribute to Lucas Pope's *Papers, Please*. Art, music and sound effects are generated by code. Its fictional satire concerns region-based blocking and disguises, not any ethnicity or group.
+- Code is released under the [MIT License](LICENSE).
+- [Fusion Pixel Font](https://github.com/TakWolf/fusion-pixel-font) uses the [SIL Open Font License 1.1](OFL-fusion-pixel.txt).
+- For the original game's mod and contribution guidelines, see its [CONTRIBUTING.md](https://github.com/ip-please/ip-please.github.io/blob/main/CONTRIBUTING.md#english).

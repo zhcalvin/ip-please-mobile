@@ -1,103 +1,144 @@
 <p align="center">
-  <a href="https://ip-please.github.io"><img src="media/logo.png" width="160" alt="IP, PLEASE"></a>
+  <img src="media/logo.png" width="160" alt="IP, PLEASE">
 </p>
 
-<h1 align="center">IP, PLEASE · 请出示你的 IP</h1>
+<h1 align="center">IP, PLEASE Mobile · 请出示你的 IP</h1>
 
 <p align="center">
-  <b>简体中文</b> · <a href="README.en.md">English</a>
+  <b>简体中文</b> · <a href="README.en.md">English</a><br>
+  Android / iOS 移植版 · 离线游玩 · 横屏触摸
 </p>
 
-<p align="center">
-  Papers, Please 画风的像素小游戏。<br>
-  你抽中了十月劳动彩票，被分配到对齐部东八区检查站当入境审查员 Claude，工作只有一项：揪出假装是美国人的旅客。
-</p>
+基于开源游戏 **[IP, PLEASE](https://github.com/ip-please/ip-please.github.io)** 的移动端移植版本。游戏原作的剧情、像素素材、音乐与音效来自原项目；本仓库主要增加 Android / iOS 原生工程、移动端适配和构建工具。
+
+- **本移植版源码**：[zhcalvin/ip-please-mobile](https://github.com/zhcalvin/ip-please-mobile)
+- **发布页**：[GitHub Releases](https://github.com/zhcalvin/ip-please-mobile/releases)
+- **原项目源码**：[ip-please/ip-please.github.io](https://github.com/ip-please/ip-please.github.io)
+- **原版在线体验**：[ip-please.github.io](https://ip-please.github.io)
+- **原作者版权署名**：ctnyanya，保留于 [LICENSE](LICENSE)
+
+## 实机截图
+
+以下 5 张截图拍摄于华为 DBY-W09 安卓平板，日期为 2026-10-21，展示本移植版的实际运行画面。
 
 <p align="center">
-  <a href="https://ip-please.github.io"><b>▶ 在线玩：ip-please.github.io</b></a>
-</p>
-
-<p align="center">
-  <img src="media/gameplay-zh.gif" width="640" alt="游戏画面：旅客说“Hello, I am 美国人。”，检查发现他的时区是北京时间；测谎时他脱口接上“一百八一杯”，盖上拒绝章后墨镜滑了下来">
+  <img src="media/screenshots/android-tablet-01.jpg" width="960" alt="安卓平板上的 IP, PLEASE 游戏标题画面">
   <br>
-  <sub>Day 2：“Hello, I am 美国人。”</sub>
+  <sub>游戏标题 · 请出示你的 IP</sub>
 </p>
 
-- 6 天剧情 + 两个结局，全程约 30 分钟，每天自动存档
-- 中文 / English 双语，开局选择（英文版里外国人看不懂的梗，在每天报纸的译注里解释）
-- 手机横屏用手指、电脑用鼠标拖证件
-- 纯静态网页，不加载任何外部资源；下载仓库后直接双击 `index.html` 也能玩
+| 每日新闻 | 入境检查亭 |
+|:---:|:---:|
+| ![每日新闻：边境开放](media/screenshots/android-tablet-02.jpg) | ![检查亭：叫号并接待第一位旅客](media/screenshots/android-tablet-03.jpg) |
+| **规则与证件核对** | **盖章操作** |
+| ![打开入境规则，对照设备入境卡](media/screenshots/android-tablet-04.jpg) | ![拉出印章栏，选择准予或拒绝](media/screenshots/android-tablet-05.jpg) |
 
-## 英文版
+截图原图保存在 [`media/screenshots/`](media/screenshots/)，由平板直接复制，未裁剪或修改。
 
-```text
-英文版已严肃上线，游戏开局可选择语言。
-The English version is now seriously online. Choose your language at the start of the game.
-https://ip-please.github.io
-@DarioAmodei @claudeai @AnthropicAI @dukope
+## 游戏与移动端功能
+
+你是对齐部东八区检查站的入境审查员 Claude，需要核对旅客的 IP、时区、语言和证件，识别各种伪装。
+
+- 保留原作的 6 天剧情、两个结局，以及约 30 分钟的游玩流程。
+- 支持简体中文和 English，开局选择语言。
+- 叫号 → 拖证件到桌面 → 对照规则检查 → 盖章 → 归还证件。
+- Android 使用系统 WebView，iOS 使用系统 WKWebView，共用同一套游戏代码，无第三方运行库依赖。
+- 游戏素材随安装包提供，无需连接服务器即可游玩。
+- 横屏触摸操作，按比例缩放，避开屏幕安全区；切到后台时暂停剧情计时和音频。
+- 沿用原作的每日自动存档：退出或被系统终止后，从上次保存的日期重新开始当天。存档仅保存在当前设备上。
+
+## 构建与安装
+
+公共环境需要 Node.js 20+，无需运行 `npm install`。完整说明见 [移动端构建文档](mobile/README.md)。
+
+### Android
+
+需要 JDK 17+、Android SDK Platform 35 / Build Tools 35.0.0；最低支持 Android 8.0。
+
+```bash
+# 调试包，并运行 Android Lint
+node tools/mobile.mjs android
+
+# 正式签名 Release 包，并运行 Android Lint
+node tools/mobile.mjs android-release
 ```
 
-## 玩法
+- 调试包：`build/mobile/IPPlease-debug.apk`。
+- 正式包：`build/releases/IPPlease-1.0.0-android.apk`，同时生成 `.sha256` 校验文件。
+- Release 构建需要配置自己的签名密钥；配置方式见 [移动端文档](mobile/README.md)。密钥和密码不属于开源代码。
+- 发布时将正式 APK 与校验文件上传到 GitHub Releases 或自己的网站，即可提供下载。
 
-叫号 → 把证件拖到桌上 → 对照《宪法》检查 → 盖章 → 把证件还给旅客。
+安装调试包：
 
-| 天 | 新规则 / 新工具 |
-|---|---|
-| 1 | 只放行支持地区的 IP |
-| 2 | 时区、语言须与 IP 一致；测谎、拘留 |
-| 3 | 账户卡：付款卡、账单地址、手机号 |
-| 4 | X 光扫描后台进程；黑话快剪 |
-| 5 | 中资控股企业；蒸馏大军 |
-| 6 | 乔治老哥终极版，以及最后一位旅客 |
+```bash
+adb install -r build/mobile/IPPlease-debug.apk
+adb shell am start -n io.github.ipplease.game/.MainActivity
+```
 
-## Mod
+### iOS
 
-主线只接受 bug 修复和游戏体验上的优化，不接受新增游戏机制的 PR。想大改这个游戏的人太多了，方向又各不相同，全合进来会变成大杂烩，也审不过来。
+需要 macOS 和 Xcode，最低支持 iOS 15，包含 iPhone / iPad 工程。
 
-有新玩法的点子，欢迎 fork 一份，做成自己的 mod 另行发布、署上你的名字，你的想法能完整保留，不用为了合进主线删删改改。做好后[登记一下](https://github.com/ip-please/ip-please.github.io/issues/new?template=mod.yml)，就会收进下面的列表，B 站的 mod 列表也会同步收录。具体怎么做见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+```bash
+node tools/mobile.mjs ios          # 模拟器 App
+node tools/mobile.mjs ios-device   # 未签名真机 App
+```
 
-| Mod | 作者 | 简介 |
-|---|---|---|
-| [IP, PLEASE: Modder's Cut · 请出示你的 IP：加长版](https://erasercn.github.io/ip-please/)<br>[源码](https://github.com/EraserCN/ip-please) · [App 下载](https://github.com/EraserCN/ip-please/releases) | [EraserCN](https://github.com/EraserCN) | 延长到 12 天，加了破壁者剧情线和多重结局；第 8–11 天各有新规则和专属角色（指纹浏览器、提示词注入、淘宝学生证……）。有 Android、iOS、macOS 客户端 |
+工程入口为 `mobile/ios/IPPlease.xcodeproj`。真机安装、TestFlight 或 App Store 分发需要在 Xcode 中配置自己的 Apple 开发团队和签名。
+
+### 网页版
+
+根目录仍是完整的静态网页，可直接打开 `index.html` 离线游玩，也可本地预览：
+
+```bash
+python3 -m http.server 8000
+```
+
+浏览器打开 <http://localhost:8000>。
 
 ## 目录
 
 | 路径 | 内容 |
 |---|---|
-| `index.html` | 页面 |
-| `main.js` | 场景切换、输入、主循环 |
-| `booth.js` | 检查亭：证件、盖章、检查模式、测谎、X 光 |
-| `events.js` | 黑话快剪、蒸馏大军、聊天封号、结局 |
-| `screens.js` | 开场、报纸、下班结算、片尾、存档 |
-| `i18n.js` | 语言切换 `T()`，以及开局选语言的画面 |
-| `en.js` | 英文译文（以中文原句为键）、报纸上的译注、黑话注释 |
-| `data.js` | 剧本：每天的旅客、报纸、随机路人 |
-| `docs.js` | 证件：护照、设备卡、账户卡、宪法 |
-| `gfx.js` / `sfx.js` | 像素绘图 / 音效合成（全部现场合成，没有音频文件） |
-| `assets.js` | 预渲染的人物、背景、字形图集（由 `tools/build_assets.py` 生成，不要手改） |
-| `tools/` | 素材生成工具：`pp/` 是人物和场景的像素画法，`assets/fonts/` 是像素字体；`check_en.js` 查漏翻 |
-| `media/` | README 用的 logo、游戏动图，以及链接分享卡片 `og.png` |
+| `mobile/android/` | Android 原生工程与 Gradle Wrapper |
+| `mobile/ios/` | iOS 原生工程、共享 Scheme 与 UI 冒烟测试 |
+| `mobile/README.md` | 构建环境、签名、安装与存档说明 |
+| `tools/mobile.mjs` | 同步离线资源、构建双端 App 与打包 Android Release |
+| `tests/` | 移动端输入、生命周期与构建相关回归测试 |
+| `index.html` / `main.js` | 页面、输入、场景切换与主循环 |
+| `booth.js` / `docs.js` | 检查亭、证件、盖章与检查工具 |
+| `events.js` / `screens.js` | 剧情事件、开场、报纸、结算、存档与结局 |
+| `data.js` / `i18n.js` / `en.js` | 剧本、语言选择与英文翻译 |
+| `gfx.js` / `sfx.js` / `assets.js` | 像素绘图、合成音效和预渲染素材 |
+| `media/screenshots/` | Android 平板实机截图 |
+| `tools/pp/` / `tools/assets/` | 原作素材生成工具与像素字体 |
 
-## 修改与重建素材
+`mobile/web/`、`build/` 和原生工程的构建输出均为生成内容，不需要提交到 Git。
 
-改了游戏里的文字（新出现的汉字需要进字形图集）或者人物画法之后，重新生成 `assets.js`：
-
-```bash
-pip install -r tools/requirements.txt
-python tools/build_assets.py
-```
-
-改了中文台词，要同步改 `en.js` 里对应的键（中文原句一字不差）。漏没漏可以跑：
+## 开发与验证
 
 ```bash
+node --test tests/*.test.mjs
 node tools/check_en.js
 ```
 
-本地预览：在仓库根目录运行 `python -m http.server`，打开 <http://localhost:8000>。
+已完成 Android 模拟器核心操作验证、华为平板安装和实机运行验证，以及 iOS 模拟器冒烟测试和未签名真机架构构建。iOS 真机安装尚未验证。
+
+### 修改与重建素材
+
+修改游戏文字或像素素材后，可使用原项目的工具重建字形图集和素材：
+
+```bash
+pip install -r tools/requirements.txt
+python3 tools/build_assets.py
+```
+
+修改中文台词时需同步更新 `en.js` 中对应的中文键。构建客户端前，`tools/mobile.mjs` 会同步根目录的游戏文件，避免手动维护两份游戏代码。
 
 ## 致谢与许可
 
-- 致敬 Lucas Pope 的《Papers, Please》。本作是同人讽刺小品，角色均为虚构，讽刺的是“按地区封锁”这件事和各种伪装的荒诞，不针对任何民族和群体——宪法第 12 条：只看地区，不看脸。
-- 画面、音乐、音效均由 Claude Code 写程序生成。
-- 代码以 [MIT](LICENSE) 许可开源。
-- 像素字体：[缝合像素字体 Fusion Pixel Font](https://github.com/TakWolf/fusion-pixel-font)，SIL Open Font License 1.1（见 `OFL-fusion-pixel.txt`）。
+- 感谢 [IP, PLEASE 原项目](https://github.com/ip-please/ip-please.github.io) 及其作者 ctnyanya。本移植版保留原作者版权声明，原作内容与移动端适配的范围如上所述。
+- 原作致敬 Lucas Pope 的《Papers, Please》，画面、音乐和音效由程序生成。角色均为虚构，讽刺的是按地区封锁和伪装的荒诞，不针对任何民族或群体。
+- 代码遵循 [MIT License](LICENSE)。
+- 像素字体使用 [Fusion Pixel Font](https://github.com/TakWolf/fusion-pixel-font)，遵循 [SIL Open Font License 1.1](OFL-fusion-pixel.txt)。
+- 原项目的 Mod 与贡献约定可参考其 [CONTRIBUTING.md](https://github.com/ip-please/ip-please.github.io/blob/main/CONTRIBUTING.md)。

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">IP, PLEASE</string>
+    <string name="exit_title">Exit game?</string>
+    <string name="exit_message">Progress is saved at the start of each day. Exiting during a day restarts that day next time.</string>
+    <string name="exit_confirm">Exit</string>
+    <string name="exit_cancel">Keep playing</string>
+</resources>

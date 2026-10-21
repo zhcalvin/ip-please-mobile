@@ -1,3 +1,22 @@
 __pycache__/
 *.pyc
 .DS_Store
+.omx/
+*.profraw
+
+# Private release signing material must stay outside the source repository
+*.jks
+*.keystore
+*.p12
+*.pfx
+android-signing.json
+keystore.properties
+
+# Generated mobile assets, build products, and local IDE configuration
+/build/
+/mobile/web/
+/mobile/android/.gradle/
+/mobile/android/local.properties
+/mobile/android/**/build/
+/mobile/ios/**/xcuserdata/
+/mobile/ios/**/*.xcuserstate

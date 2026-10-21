@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="exit_title">退出游戏？</string>
+    <string name="exit_message">每天开始时自动保存。中途退出后，下次会从这一天开始重新游玩。</string>
+    <string name="exit_confirm">退出</string>
+    <string name="exit_cancel">继续游戏</string>
+</resources>

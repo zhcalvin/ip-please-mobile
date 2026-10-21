@@ -3,7 +3,7 @@
 
 const SFX = (() => {
   const SR = 44100;
-  let ac = null, master = null, ambGain = null, ambSrc = null, muted = false;
+  let ac = null, master = null, ambGain = null, ambSrc = null, muted = false, paused = false;
   const cache = new Map();
 
   const N = (d) => Math.max(1, Math.floor(d * SR));
@@ -414,7 +414,7 @@ const SFX = (() => {
   }
 
   function playBuf(b, gain = 1, when = 0) {
-    if (!ac || muted) return null;
+    if (!ac || muted || paused) return null;
     const src = ac.createBufferSource();
     src.buffer = b;
     const g = ac.createGain();
@@ -426,10 +426,11 @@ const SFX = (() => {
 
   const api = {
     init() {
-      if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
+      if (ac) { if (!paused && ac.state === 'suspended') ac.resume().catch(() => {}); return; }
       const AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return;
       ac = new AC();
+      if (paused) ac.suspend().catch(() => {});
       const comp = ac.createDynamicsCompressor();
       master = ac.createGain();
       master.gain.value = 0.9;
@@ -472,6 +473,10 @@ const SFX = (() => {
       }
     },
     stop(src) { try { if (src) src.stop(); } catch (e) { /* 已经停了 */ } },
+    setPaused(value) {
+      paused = !!value;
+      if (ac) (paused ? ac.suspend() : ac.resume()).catch(() => {});
+    },
     toggleMute() {
       muted = !muted;
       if (master) master.gain.value = muted ? 0 : 0.9;

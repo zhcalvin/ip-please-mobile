@@ -18,19 +18,24 @@
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABLUlEQVR42t1Xyw2DMAxNokxRdQ4OzJEDh4oZGIAjAzAD4sCBOTh0DsQa7aVIVho7cSANqo989J6fX2Jbik887reX+GGM6yaFEELlAIeYMgc4DB3zU2MK5/N+fqYjAEGbaXETqEo2maASNKZAQbHoqzKIBElgz5oLbitCEUEJxGQdo4YSmUMdyX7u6jADTwt6chQXHAP1kcFIsEtg2uELbO5qYdrhvBL4MoQkbPDQsjgvIkp+COrKlnoHy2CfCM2V35XlkRJorvyh34QS0pzMKULJTbgDu+Te/cE1IMsDvjpDf3DUUHY/hy0VkxiC2PcCBe7qCeyLiCpBcg9QGcaa0NmOz2zFvpassNkO88LfzQPXHckuMZReZixPuZhkX83UvqXmiHHdpIKrco71/A3Xf8M4EeFWCQAAAABJRU5ErkJggg==">
 <style>
   html, body { margin: 0; height: 100%; background: #161313; overflow: hidden; }
-  body { display: flex; align-items: center; justify-content: center; font-family: system-ui, sans-serif; }
+  body {
+    box-sizing: border-box; font-family: system-ui, sans-serif;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  #viewport { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
   canvas {
     display: block; image-rendering: pixelated; image-rendering: crisp-edges;
     touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
   }
   @media (pointer: fine) { canvas { cursor: none; } }
-  .ui { position: fixed; top: 6px; right: 8px; display: flex; gap: 6px; z-index: 2; }
+  .ui { position: fixed; top: max(6px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); display: flex; gap: 6px; z-index: 2; }
+  html[data-native] #full { display: none; }
   .ui button {
     font: 12px system-ui, sans-serif; color: #968f87; background: rgba(22, 19, 19, 0.7);
     border: 1px solid #4a4440; border-radius: 3px; padding: 3px 8px; cursor: pointer;
   }
   .ui button:hover { color: #e4dfd4; }
-  @media (max-height: 500px) { .ui { top: 2px; right: 2px; opacity: 0.55; } .ui button { font-size: 10px; padding: 1px 5px; } }
+  @media (max-height: 500px) { .ui { top: max(2px, env(safe-area-inset-top)); right: max(2px, env(safe-area-inset-right)); opacity: 0.55; } .ui button { font-size: 10px; padding: 1px 5px; } }
   #rotate {
     display: none; position: fixed; inset: 0; z-index: 3; background: rgba(22, 19, 19, 0.92);
     color: #e89c74; font-size: 16px; text-align: center; align-items: center; justify-content: center;
@@ -42,7 +47,9 @@
 </style>
 </head>
 <body>
-<canvas id="game" width="640" height="360" aria-label="IP, PLEASE 游戏画面"></canvas>
+<main id="viewport">
+  <canvas id="game" width="640" height="360" aria-label="IP, PLEASE 游戏画面"></canvas>
+</main>
 <div class="ui">
   <button id="mute" type="button">声音：开</button>
   <button id="full" type="button">全屏</button>

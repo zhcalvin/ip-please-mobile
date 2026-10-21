@@ -1,0 +1,81 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Release credentials stay outside this public repository and are supplied by tools/mobile.mjs.
+def releaseCredentials = [
+    keystore: System.getenv('IP_PLEASE_KEYSTORE'),
+    storePassword: System.getenv('IP_PLEASE_STORE_PASSWORD'),
+    keyAlias: System.getenv('IP_PLEASE_KEY_ALIAS'),
+    keyPassword: System.getenv('IP_PLEASE_KEY_PASSWORD')
+]
+def hasReleaseCredentials = releaseCredentials.values().every { it != null && !it.isEmpty() }
+
+android {
+    namespace 'io.github.ipplease.game'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'io.github.ipplease.game'
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName '1.0.0'
+    }
+
+    sourceSets {
+        main.assets.srcDirs = ['../../web']
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    signingConfigs {
+        release {
+            if (hasReleaseCredentials) {
+                storeFile file(releaseCredentials.keystore)
+                storePassword releaseCredentials.storePassword
+                keyAlias releaseCredentials.keyAlias
+                keyPassword releaseCredentials.keyPassword
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            debuggable false
+            minifyEnabled false
+        }
+    }
+}
+
+// Direct Gradle/Android Studio release builds must also fail closed, while debug stays usable.
+gradle.taskGraph.whenReady { graph ->
+    if (graph.allTasks.any { it.project == project && it.name.contains('Release') }) {
+        if (!hasReleaseCredentials) {
+            throw new GradleException('Release signing is missing. Run node tools/mobile.mjs android-release with an external signing configuration. Unsigned and debug-signed releases are disabled.')
+        }
+        def keystore = new File(releaseCredentials.keystore)
+        if (!keystore.isAbsolute() || !keystore.isFile() || !keystore.canRead()) {
+            throw new GradleException('Release signing requires a readable keystore at an absolute path.')
+        }
+        if (releaseCredentials.keyAlias.equalsIgnoreCase('androiddebugkey')) {
+            throw new GradleException('A dedicated release key is required; the Android debug key cannot sign a release.')
+        }
+    }
+}
+
+tasks.register('verifyWebAssets') {
+    doLast {
+        if (!rootProject.file('../web/index.html').isFile()) {
+            throw new GradleException('Game assets missing. Run node tools/mobile.mjs prepare from the repository root first.')
+        }
+    }
+}
+
+tasks.named('preBuild').configure {
+    dependsOn 'verifyWebAssets'
+}

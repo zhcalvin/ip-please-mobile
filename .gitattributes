@@ -1,0 +1,2 @@
+*.bat text eol=crlf
+mobile/android/gradlew text eol=lf
