@@ -17,6 +17,14 @@ A mobile port of the open-source game **[IP, PLEASE](https://github.com/ip-pleas
 - **Original browser game**: [ip-please.github.io](https://ip-please.github.io)
 - **Original copyright holder**: ctnyanya, credited in [LICENSE](LICENSE)
 
+## Gameplay preview
+
+<p align="center">
+  <img src="media/gameplay-en.gif" width="960" alt="Day 2 gameplay from the original game: inspect documents, test a traveler and stamp their papers">
+  <br>
+  <sub>Day 2 gameplay · Animation from the original project</sub>
+</p>
+
 ## Screenshots
 
 These five screenshots were captured on a Huawei DBY-W09 Android tablet on October 21, 2026, while running this mobile port.

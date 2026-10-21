@@ -17,6 +17,14 @@
 - **原版在线体验**：[ip-please.github.io](https://ip-please.github.io)
 - **原作者版权署名**：ctnyanya，保留于 [LICENSE](LICENSE)
 
+## 玩法动图
+
+<p align="center">
+  <img src="media/gameplay-zh.gif" width="960" alt="原作第 2 天玩法演示：检查旅客证件、测谎并盖章">
+  <br>
+  <sub>原作第 2 天玩法演示 · 动图沿用原项目素材</sub>
+</p>
+
 ## 实机截图
 
 以下 5 张截图拍摄于华为 DBY-W09 安卓平板，日期为 2026-10-21，展示本移植版的实际运行画面。
