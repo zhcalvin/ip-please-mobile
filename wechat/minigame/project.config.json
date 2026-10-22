@@ -1,0 +1,16 @@
+{
+    "description": "IP, PLEASE 微信小游戏",
+    "projectname": "ip-please-mobile-wechat",
+    "appid": "wx2484d6db995ed6b2",
+    "compileType": "game",
+    "setting": {
+        "es6": true,
+        "minified": true,
+        "urlCheck": true,
+        "uploadWithSourceMap": true,
+        "minifyWXML": true
+    },
+    "packOptions": {
+        "ignore": []
+    }
+}

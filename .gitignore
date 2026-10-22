@@ -20,3 +20,14 @@ keystore.properties
 /mobile/android/**/build/
 /mobile/ios/**/xcuserdata/
 /mobile/ios/**/*.xcuserstate
+
+# WeChat generated package, local IDE state and ranking data
+/wechat/minigame/generated/
+/wechat/minigame/project.private.config.json
+/wechat/server/*.sqlite*
+/wechat/server/data/
+/wechat/.env
+/wechat/.env.*
+/wechat/server/.env
+/wechat/server/.env.*
+!/wechat/server/.env.example

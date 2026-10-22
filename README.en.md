@@ -6,10 +6,10 @@
 
 <p align="center">
   <a href="README.md">简体中文</a> · <b>English</b><br>
-  Android / iOS port · Offline play · Landscape touch controls
+  Android / iOS / WeChat Mini Game · Offline play · Landscape touch controls
 </p>
 
-A mobile port of the open-source game **[IP, PLEASE](https://github.com/ip-please/ip-please.github.io)**. The original game, story, pixel art, music and sound effects come from the upstream project. This repository adds native Android / iOS projects, mobile adaptations and build tools.
+A mobile port of the open-source game **[IP, PLEASE](https://github.com/ip-please/ip-please.github.io)**. The original game, story, pixel art, music and sound effects come from the upstream project. This repository adds native Android / iOS projects, a WeChat Mini Game, mobile adaptations and build tools.
 
 - **This mobile port**: [zhcalvin/ip-please-mobile](https://github.com/zhcalvin/ip-please-mobile)
 - **Release page**: [GitHub Releases](https://github.com/zhcalvin/ip-please-mobile/releases)
@@ -93,6 +93,16 @@ node tools/mobile.mjs ios-device   # Unsigned device app
 
 Open `mobile/ios/IPPlease.xcodeproj` and configure your Apple development team and signing to install on a device or distribute through TestFlight / the App Store.
 
+### WeChat Mini Game
+
+The independent [`wechat/`](wechat/README.md) project uses native WeChat Canvas and includes a national leaderboard, optional daily-report sharing, and an official Game Club entry. Advertising is currently disabled.
+
+```bash
+node wechat/tools/build.mjs
+```
+
+Import `wechat/minigame/` into WeChat DevTools as a **Mini Game**, using AppID `wx2484d6db995ed6b2`. Add `https://api.momoyu.ltd` to the Mini Game's allowed request domains. Game Club requires account-side activation and device verification. Generated files are excluded from Git, so build before importing. See the [WeChat guide](wechat/README.md) for ranking rules, deployment and release checks.
+
 ### Browser
 
 The root directory remains a standalone static game. Open `index.html` directly to play offline, or serve it locally:
@@ -110,6 +120,7 @@ Open <http://localhost:8000>.
 | `mobile/android/` | Native Android project and Gradle Wrapper |
 | `mobile/ios/` | Native iOS project, shared scheme and UI smoke test |
 | `mobile/README.md` | Build environment, signing, installation and save behavior |
+| `wechat/` | WeChat Mini Game client, national leaderboard and isolated deployment configuration |
 | `tools/mobile.mjs` | Offline asset staging, native builds and Android release packaging |
 | `tests/` | Regression tests for mobile input, lifecycle and build behavior |
 | `index.html` / `main.js` | Page, input, scene switching and main loop |

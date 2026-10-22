@@ -1,0 +1,38 @@
+[Unit]
+Description=IP PLEASE WeChat national leaderboard
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+DynamicUser=yes
+WorkingDirectory=/opt/ip-please-ranking/current
+Environment=TRUST_PROXY=true
+EnvironmentFile=/etc/ip-please-ranking.env
+ExecStart=/usr/bin/node wechat/server/server.mjs
+StateDirectory=ip-please-ranking
+StateDirectoryMode=0700
+UMask=0077
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=20
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/lib/ip-please-ranking
+MemoryAccounting=yes
+MemoryHigh=144M
+MemoryMax=192M
+CPUQuota=25%
+TasksMax=64
+LimitNOFILE=1024
+
+[Install]
+WantedBy=multi-user.target

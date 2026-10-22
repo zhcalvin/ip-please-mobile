@@ -6,10 +6,10 @@
 
 <p align="center">
   <b>简体中文</b> · <a href="README.en.md">English</a><br>
-  Android / iOS 移植版 · 离线游玩 · 横屏触摸
+  Android / iOS / 微信小游戏 · 离线游玩 · 横屏触摸
 </p>
 
-基于开源游戏 **[IP, PLEASE](https://github.com/ip-please/ip-please.github.io)** 的移动端移植版本。游戏原作的剧情、像素素材、音乐与音效来自原项目；本仓库主要增加 Android / iOS 原生工程、移动端适配和构建工具。
+基于开源游戏 **[IP, PLEASE](https://github.com/ip-please/ip-please.github.io)** 的移动端移植版本。游戏原作的剧情、像素素材、音乐与音效来自原项目；本仓库主要增加 Android / iOS 原生工程、微信小游戏、移动端适配和构建工具。
 
 - **本移植版源码**：[zhcalvin/ip-please-mobile](https://github.com/zhcalvin/ip-please-mobile)
 - **发布页**：[GitHub Releases](https://github.com/zhcalvin/ip-please-mobile/releases)
@@ -96,6 +96,16 @@ node tools/mobile.mjs ios-device   # 未签名真机 App
 
 工程入口为 `mobile/ios/IPPlease.xcodeproj`。真机安装、TestFlight 或 App Store 分发需要在 Xcode 中配置自己的 Apple 开发团队和签名。
 
+### 微信小游戏
+
+独立工程位于 [`wechat/`](wechat/README.md)，使用微信原生 Canvas，包含全国排行榜、每日战报转发和官方游戏圈入口，当前不接入广告。
+
+```bash
+node wechat/tools/build.mjs
+```
+
+用微信开发者工具以**小游戏**类型导入 `wechat/minigame/`，项目 AppID 为 `wx2484d6db995ed6b2`。需在小游戏后台将 `https://api.momoyu.ltd` 加入 request 合法域名；游戏圈需完成后台开通和真机验收。生成文件不在 Git 中，导入前必须先构建。排行榜规则、部署与发布检查见 [微信小游戏说明](wechat/README.md)。
+
 ### 网页版
 
 根目录仍是完整的静态网页，可直接打开 `index.html` 离线游玩，也可本地预览：
@@ -113,6 +123,7 @@ python3 -m http.server 8000
 | `mobile/android/` | Android 原生工程与 Gradle Wrapper |
 | `mobile/ios/` | iOS 原生工程、共享 Scheme 与 UI 冒烟测试 |
 | `mobile/README.md` | 构建环境、签名、安装与存档说明 |
+| `wechat/` | 微信小游戏客户端、全国排行榜服务与独立部署配置 |
 | `tools/mobile.mjs` | 同步离线资源、构建双端 App 与打包 Android Release |
 | `tests/` | 移动端输入、生命周期与构建相关回归测试 |
 | `index.html` / `main.js` | 页面、输入、场景切换与主循环 |
