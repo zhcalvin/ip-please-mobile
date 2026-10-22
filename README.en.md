@@ -101,7 +101,7 @@ The independent [`wechat/`](wechat/README.md) project uses native WeChat Canvas 
 node wechat/tools/build.mjs
 ```
 
-Import `wechat/minigame/` into WeChat DevTools as a **Mini Game**, using AppID `wx2484d6db995ed6b2`. Add `https://api.momoyu.ltd` to the Mini Game's allowed request domains. Game Club requires account-side activation and device verification. Generated files are excluded from Git, so build before importing. See the [WeChat guide](wechat/README.md) for ranking rules, deployment and release checks.
+Import `wechat/minigame/` into WeChat DevTools as a **Mini Game**, using AppID `wx2484d6db995ed6b2`. Add `https://api.momoyu.ltd` to the Mini Game's allowed request domains and verify the Game Club entry on a physical WeChat device. Generated files are excluded from Git, so build before importing. See the [WeChat guide](wechat/README.md) for ranking rules, deployment and release checks.
 
 ### Browser
 

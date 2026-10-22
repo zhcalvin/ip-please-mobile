@@ -104,7 +104,7 @@ node tools/mobile.mjs ios-device   # 未签名真机 App
 node wechat/tools/build.mjs
 ```
 
-用微信开发者工具以**小游戏**类型导入 `wechat/minigame/`，项目 AppID 为 `wx2484d6db995ed6b2`。需在小游戏后台将 `https://api.momoyu.ltd` 加入 request 合法域名；游戏圈需完成后台开通和真机验收。生成文件不在 Git 中，导入前必须先构建。排行榜规则、部署与发布检查见 [微信小游戏说明](wechat/README.md)。
+用微信开发者工具以**小游戏**类型导入 `wechat/minigame/`，项目 AppID 为 `wx2484d6db995ed6b2`。需在小游戏后台将 `https://api.momoyu.ltd` 加入 request 合法域名，并在微信真机验证游戏圈入口。生成文件不在 Git 中，导入前必须先构建。排行榜规则、部署与发布检查见 [微信小游戏说明](wechat/README.md)。
 
 ### 网页版
 
