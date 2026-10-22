@@ -96,7 +96,7 @@ node tools/mobile.mjs ios-device   # 未签名真机 App
 
 工程入口为 `mobile/ios/IPPlease.xcodeproj`。真机安装、TestFlight 或 App Store 分发需要在 Xcode 中配置自己的 Apple 开发团队和签名。
 
-### 微信小游戏
+### 微信小游戏：揪起你的盖头来
 
 独立工程位于 [`wechat/`](wechat/README.md)，使用微信原生 Canvas，包含全国排行榜、每日战报转发和官方游戏圈入口，当前不接入广告。
 

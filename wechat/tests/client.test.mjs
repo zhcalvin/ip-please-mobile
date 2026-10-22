@@ -189,9 +189,13 @@ function loadGame(mock) {
   if (!built) { execFileSync(process.execPath, ['wechat/tools/build.mjs'], { cwd: root }); built = true; }
   const filename = path.join(root, 'wechat/minigame/generated/game-bundle.js');
   // Test-only access added in memory. The distributable does not expose gameplay setters.
-  const source = fs.readFileSync(filename, 'utf8').replace('return { ranking, ui: wechatUI, platform,', `return { test: {
+  const source = fs.readFileSync(filename, 'utf8').replace('return { ranking, ui: wechatUI, platform,', `
+  const titleLabels = [], originalBigTextForTest = bigText;
+  bigText = (...args) => { titleLabels.push(args[2]); return originalBigTextForTest(...args); };
+  return { test: {
     get S() { return S; }, get B() { return B; }, get SUM() { return SUM; },
     get now() { return now; }, set now(value) { now = value; }, get sceneT0() { return sceneT0; },
+    get displayTitle() { return document.title; }, titleLabels, drawLangPick, drawTitle, drawEnd, glyph, tw,
     go, chooseLang, buildQueue, startDay, newEntrant, finish, summaryClick, startRush, rushPick, rushEnd, updateClones, startClones, runTimers,
     setScene(value) { scene = value; }, setDay(value) { S.day = value; },
     forceTime(value) { now = value; }, constants: { CONTINUE_BTN, RUSH }, titleClick,
@@ -204,6 +208,21 @@ function loadGame(mock) {
 test('generated game boots without DOM/WebView and retains deterministic six-day gameplay', async () => {
   const mock = mockWx(), runtime = loadGame(mock); await tick();
   assert.equal(runtime.getScene(), 'boot'); assert.ok(mock.frames > 0);
+  mock.frame(0);
+  const name = '揪起你的盖头来';
+  assert.equal(runtime.test.displayTitle, name);
+  for (const lang of ['zh', 'en']) {
+    runtime.test.chooseLang(lang);
+    assert.equal(runtime.test.displayTitle, name, 'the game name stays exact in both languages');
+    for (const draw of [runtime.test.drawLangPick, () => runtime.test.drawTitle(3), () => runtime.test.drawEnd(3)]) {
+      runtime.test.titleLabels.length = 0;
+      draw();
+      assert.equal(runtime.test.titleLabels[0], name);
+      assert.ok(!runtime.test.titleLabels.some((s) => /IP, PLEASE|请出示你的 IP|PRESENT YOUR IP/.test(s)));
+    }
+  }
+  for (const ch of name) assert.ok(runtime.test.glyph(12, ch), `title glyph must render: ${ch}`);
+  assert.ok(runtime.test.tw(name, 12) * 5 <= 600, 'the main pixel title fits its banner');
   runtime.test.chooseLang('zh'); runtime.test.go('title'); runtime.test.forceTime(3);
   runtime.test.titleClick(320, 300);
   assert.equal(runtime.getScene(), 'title'); // Await server run before starting.

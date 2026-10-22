@@ -6,6 +6,7 @@ const require = createRequire(import.meta.url);
 const { createShare, snapshotSummary, shareMetadata, CARD_WIDTH, CARD_HEIGHT } = require('../client/share.js');
 const { createUI } = require('../client/ui.js');
 const { createGameClub, GAME_CLUB_BOX } = require('../client/gameclub.js');
+const { GAME_NAME } = require('../client/branding.js');
 
 function mockContext() {
   const text = [], images = [];
@@ -27,7 +28,8 @@ test('share snapshot includes only exact current summary data and immutable meta
   assert.equal(snapshot.balance, 37); assert.equal(Object.isFrozen(snapshot), true);
   assert.deepEqual(Object.keys(snapshot), ['day', 'balance', 'correct', 'total']);
   const metadata = shareMetadata(snapshot, 'wxfile://daily-report.png');
-  assert.match(metadata.title, /DAY 4 结余 37 Token/);
+  assert.equal(GAME_NAME, '揪起你的盖头来');
+  assert.equal(metadata.title, '揪起你的盖头来｜DAY 4 结余 37 Token');
   assert.equal(metadata.query, 'from=daily-report');
   assert.equal(metadata.imageUrl, 'wxfile://daily-report.png');
   assert.ok(!JSON.stringify(metadata).includes('private'));
@@ -36,12 +38,20 @@ test('share snapshot includes only exact current summary data and immutable meta
 });
 
 test('card renders current selected balance and exports 5:4 only after explicit send', async () => {
-  const mock = mockWx(), sharing = createShare(mock.wx);
+  const mock = mockWx();
+  let menuOptions, menuShare;
+  mock.wx.showShareMenu = (options) => { menuOptions = options; };
+  mock.wx.onShareAppMessage = (listener) => { menuShare = listener; };
+  const sharing = createShare(mock.wx);
+  assert.deepEqual(menuOptions, { menus: ['shareAppMessage'] });
+  assert.deepEqual(menuShare(), { title: '揪起你的盖头来', query: 'from=menu' });
   sharing.show(summary);
   assert.equal(mock.messages.length, 0); assert.equal(mock.exports.length, 0);
   assert.equal(mock.canvas.width, CARD_WIDTH); assert.equal(mock.canvas.height, CARD_HEIGHT);
   assert.equal(CARD_WIDTH / CARD_HEIGHT, 5 / 4);
   assert.ok(mock.ctx.text.some(([text]) => text === '37'));
+  assert.ok(mock.ctx.text.some(([text]) => text === '揪起你的盖头来'));
+  assert.ok(!mock.ctx.text.some(([text]) => /IP,? PLEASE/i.test(text)));
   assert.ok(mock.ctx.text.some(([text]) => text.includes('当前选项预览')));
   assert.equal(await sharing.send(), true);
   assert.equal(mock.messages.length, 1); assert.equal(mock.exports.length, 1);
@@ -88,7 +98,7 @@ test('daily report entry is manual, leaves continue untouched, and pauses only i
   assert.equal(tap(220, 334), true); assert.equal(paused, false); assert.equal(ui.open, false);
   balance = 9; tap(152, 332); assert.equal(sharing.snapshot.balance, 9);
   tap(400, 334); await Promise.resolve();
-  assert.equal(mock.messages.length, 1); assert.match(mock.messages[0].title, /结余 9 Token/);
+  assert.equal(mock.messages.length, 1); assert.equal(mock.messages[0].title, '揪起你的盖头来｜DAY 4 结余 9 Token');
   tap(220, 334); assert.equal(paused, false);
 });
 

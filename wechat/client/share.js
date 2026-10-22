@@ -1,5 +1,7 @@
 'use strict';
 
+const { GAME_NAME } = require('./branding');
+
 const CARD_WIDTH = 500, CARD_HEIGHT = 400;
 const PALETTE = { ink: '#514566', lavender: '#e9e1ff', pink: '#ffd7e8', cyan: '#bdeef2', paper: '#fffcff', coral: '#d76291' };
 
@@ -15,7 +17,7 @@ function snapshotSummary(value) {
 
 function shareMetadata(snapshot, imageUrl) {
   return {
-    title: `IP, PLEASE｜DAY ${snapshot.day} 结余 ${snapshot.balance} Token`,
+    title: `${GAME_NAME}｜DAY ${snapshot.day} 结余 ${snapshot.balance} Token`,
     query: 'from=daily-report',
     ...(imageUrl ? { imageUrl } : {}),
   };
@@ -49,7 +51,7 @@ function drawShareCard(ctx, snapshot) {
   ellipse(12, 66, 118, 140, pink); ellipse(487, 365, 140, 100, cyan);
   round(17, 17, 466, 366, 23, paper, ink);
   round(31, 31, 438, 64, 16, pink);
-  label('IP, PLEASE', 52, 58, 27, ink, 'left', true);
+  label(GAME_NAME, 52, 58, 27, ink, 'left', true);
   label('今日下班战报', 52, 80, 12, coral);
   round(361, 45, 92, 31, 12, paper); label(`DAY ${snapshot.day}`, 407, 61, 17, ink, 'center', true);
   star(457, 113, 10, coral); star(46, 330, 9, '#8dcbd1'); star(218, 126, 7, '#ad99d8');
@@ -84,6 +86,11 @@ function drawShareCard(ctx, snapshot) {
 
 function createShare(wx, changed = () => {}) {
   let snapshot = null, canvas = null, exporting = false;
+  // The native menu share should use the same display name as the in-game card.
+  try {
+    if (wx.onShareAppMessage) wx.onShareAppMessage(() => ({ title: GAME_NAME, query: 'from=menu' }));
+    if (wx.showShareMenu) wx.showShareMenu({ menus: ['shareAppMessage'] });
+  } catch (e) { /* Older clients can continue playing without a custom share menu. */ }
   const notify = (title) => { if (wx.showToast) wx.showToast({ title, icon: 'none', duration: 2400 }); };
   function show(value) {
     try { snapshot = snapshotSummary(value); } catch (e) { notify(e.message); return false; }

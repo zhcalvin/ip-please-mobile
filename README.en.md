@@ -93,7 +93,7 @@ node tools/mobile.mjs ios-device   # Unsigned device app
 
 Open `mobile/ios/IPPlease.xcodeproj` and configure your Apple development team and signing to install on a device or distribute through TestFlight / the App Store.
 
-### WeChat Mini Game
+### WeChat Mini Game: 揪起你的盖头来
 
 The independent [`wechat/`](wechat/README.md) project uses native WeChat Canvas and includes a national leaderboard, optional daily-report sharing, and an official Game Club entry. Advertising is currently disabled.
 
