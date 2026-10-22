@@ -1,5 +1,33 @@
 'use strict';
 
+const positive = (value) => Number.isFinite(value) && value > 0;
+
+function safeBounds(info, width, height, orientation) {
+  const full = { left: 0, top: 0, right: width, bottom: height };
+  const safe = info.safeArea;
+  if (!safe || !['left', 'top', 'right', 'bottom'].every((key) => Number.isFinite(safe[key])) || safe.right <= safe.left || safe.bottom <= safe.top) return full;
+  let { left, top, right, bottom } = safe;
+  // WeChat documents safeArea in portrait coordinates. Some clients already rotate it.
+  const screenWidth = positive(info.screenWidth) ? info.screenWidth : width;
+  const screenHeight = positive(info.screenHeight) ? info.screenHeight : height;
+  const portraitWidth = Math.min(screenWidth, screenHeight), portraitHeight = Math.max(screenWidth, screenHeight);
+  if (width > height && bottom > height && right <= portraitWidth && bottom <= portraitHeight) {
+    const insets = { left: Math.max(0, left), top: Math.max(0, top), right: Math.max(0, portraitWidth - right), bottom: Math.max(0, portraitHeight - bottom) };
+    if (orientation === 'landscape') {
+      [left, top, right, bottom] = [insets.top, insets.right, width - insets.bottom, height - insets.left];
+    } else if (orientation === 'landscapeReverse') {
+      [left, top, right, bottom] = [insets.bottom, insets.left, width - insets.top, height - insets.right];
+    } else {
+      // Until native orientation is known, protect either notch side without narrowing to portrait width.
+      left = Math.max(insets.top, insets.bottom); right = width - left;
+      top = Math.max(insets.left, insets.right); bottom = height - top;
+    }
+  }
+  left = Math.max(0, left); top = Math.max(0, top);
+  right = Math.min(width, right); bottom = Math.min(height, bottom);
+  return right > left && bottom > top ? { left, top, right, bottom } : full;
+}
+
 // A narrow DOM adapter for the original Canvas game; no WebView or remote game code.
 function createPlatform(wx, host = {}) {
   const display = wx.createCanvas(); // The first Mini Game canvas is the screen.
@@ -17,15 +45,17 @@ function createPlatform(wx, host = {}) {
   const requestFrame = host.requestAnimationFrame || (typeof requestAnimationFrame === 'function' && requestAnimationFrame);
   const cancelFrame = host.cancelAnimationFrame || (typeof cancelAnimationFrame === 'function' && cancelAnimationFrame);
   if (!requestFrame || !cancelFrame) throw new Error('微信基础库缺少 requestAnimationFrame');
-  let viewport = { left: 0, top: 0, width: 640, height: 360 }, dpr = 1;
-  function resize() {
-    const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
-    const width = info.windowWidth, height = info.windowHeight;
+  let viewport = { left: 0, top: 0, width: 640, height: 360 }, dpr = 1, orientation = null;
+  let windowSize = { windowWidth: 640, windowHeight: 360 };
+  function resize(event) {
+    const info = (wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()) || {};
+    const size = event && (event.size || event) || {};
+    const width = positive(size.windowWidth) ? size.windowWidth : positive(info.windowWidth) ? info.windowWidth : windowSize.windowWidth;
+    const height = positive(size.windowHeight) ? size.windowHeight : positive(info.windowHeight) ? info.windowHeight : windowSize.windowHeight;
+    windowSize = { windowWidth: width, windowHeight: height };
     dpr = Math.max(1, Math.min(info.pixelRatio || 1, 3));
     display.width = Math.round(width * dpr); display.height = Math.round(height * dpr);
-    const safe = info.safeArea || { left: 0, top: 0, right: width, bottom: height };
-    const left = Math.max(0, safe.left || 0), top = Math.max(0, safe.top || 0);
-    const right = Math.min(width, safe.right || width), bottom = Math.min(height, safe.bottom || height);
+    const { left, top, right, bottom } = safeBounds(info, width, height, orientation);
     const scale = Math.min((right - left) / 640, (bottom - top) / 360);
     viewport = { left: left + (right - left - 640 * scale) / 2, top: top + (bottom - top - 360 * scale) / 2, width: 640 * scale, height: 360 * scale };
     dispatch('window', 'resize');
@@ -98,8 +128,12 @@ function createPlatform(wx, host = {}) {
   wx.onTouchEnd(input('pointerup', 'window'));
   wx.onTouchCancel(input('pointercancel', 'window'));
   wx.onHide(() => { document.hidden = true; dispatch('document', 'visibilitychange'); });
-  wx.onShow(() => { document.hidden = false; dispatch('document', 'visibilitychange'); });
+  wx.onShow(() => { resize(); document.hidden = false; dispatch('document', 'visibilitychange'); });
   if (wx.onWindowResize) wx.onWindowResize(resize);
+  if (wx.onDeviceOrientationChange) wx.onDeviceOrientationChange(({ value }) => {
+    orientation = value;
+    resize({ size: windowSize });
+  });
   if (wx.onAudioInterruptionBegin) wx.onAudioInterruptionBegin(() => dispatch('window', 'audiointerruption', { paused: true }));
   if (wx.onAudioInterruptionEnd) wx.onAudioInterruptionEnd(() => dispatch('window', 'audiointerruption', { paused: false }));
   resize();

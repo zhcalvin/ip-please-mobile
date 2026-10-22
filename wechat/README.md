@@ -14,6 +14,8 @@ node wechat/tools/build.mjs
 
 然后用微信开发者工具导入 `wechat/minigame/`，类型选择**小游戏**。项目已填写 AppID `wx2484d6db995ed6b2`，需要使用有该项目权限的微信账号。构建会生成 `minigame/generated/` 中的游戏包、适配代码和本地 PNG；该目录不提交到 Git，首次导入和修改源代码后都需重新构建。
 
+画面以横屏 16:9 等比适配，安全区会转换到当前方向；旋转或切回游戏后重新计算窗口与触摸坐标。长屏手机两侧可能有窄留边，以完整显示游戏画面。
+
 在微信公众平台的小游戏后台，将 `https://api.momoyu.ltd` 加入 **request 合法域名**。公开 API 地址位于 [`minigame/config.js`](minigame/config.js)；使用自己的 AppID 部署时，还需修改 [`project.config.json`](minigame/project.config.json) 和服务端配置。AppSecret 只放在服务器私密环境文件，不能放进客户端或仓库。
 
 ## 排行榜与存档

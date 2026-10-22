@@ -38,7 +38,7 @@ function mockWx(storage = new Map(), handler) {
     },
     showToast() {},
   };
-  for (const name of ['TouchStart', 'TouchMove', 'TouchEnd', 'TouchCancel', 'Hide', 'Show', 'WindowResize', 'AudioInterruptionBegin', 'AudioInterruptionEnd']) wx[`on${name}`] = (callback) => { (callbacks[name] ||= []).push(callback); };
+  for (const name of ['TouchStart', 'TouchMove', 'TouchEnd', 'TouchCancel', 'Hide', 'Show', 'WindowResize', 'DeviceOrientationChange', 'AudioInterruptionBegin', 'AudioInterruptionEnd']) wx[`on${name}`] = (callback) => { (callbacks[name] ||= []).push(callback); };
   return { wx, callbacks, requests, canvases, storage, texts,
     emit: (name, value) => (callbacks[name] || []).forEach((fn) => fn(value)),
     host: { requestAnimationFrame: (fn) => { frames.set(++frameId, fn); return frameId; }, cancelAnimationFrame: (id) => frames.delete(id) },
@@ -154,6 +154,74 @@ test('WeChat native screen, touch coordinates, storage and background are adapte
   mock.emit('TouchStart', { changedTouches: [{ identifier: 1, clientX: 400, clientY: 225 }] });
   assert.deepEqual(point, [320, 180]);
   mock.emit('Hide'); assert.equal(visibility, true); mock.emit('Show'); assert.equal(visibility, false);
+});
+
+test('portrait-coordinate safe areas do not shrink landscape phones to half screen', () => {
+  for (const screen of [{ screenWidth: 393, screenHeight: 852 }, { screenWidth: 852, screenHeight: 393 }]) {
+    const mock = mockWx();
+    mock.wx.getWindowInfo = () => ({ ...screen, windowWidth: 852, windowHeight: 393, pixelRatio: 3, safeArea: { left: 0, top: 59, right: 393, bottom: 818 } });
+    const platform = createPlatform(mock.wx, mock.host), bounds = platform.game.getBoundingClientRect();
+    assert.ok(Math.abs(bounds.height - 393) < 0.001, 'landscape content should fill the available height');
+    assert.ok(bounds.width > 690, 'a portrait safe rectangle must not cap the landscape width at 393');
+    assert.ok(bounds.left >= 59 && bounds.left + bounds.width <= 852 - 34);
+    assert.deepEqual(platform.point({ clientX: bounds.left + bounds.width / 2, clientY: bounds.top + bounds.height / 2 }), [320, 180]);
+    assert.equal(platform.display.width, 2556); assert.equal(platform.display.height, 1179);
+  }
+});
+
+test('already-landscape safe areas are applied once and preserve logical touch coordinates', () => {
+  const mock = mockWx();
+  mock.wx.getWindowInfo = () => ({ windowWidth: 852, windowHeight: 393, screenWidth: 852, screenHeight: 393, pixelRatio: 3, safeArea: { left: 59, top: 0, right: 818, bottom: 393 } });
+  const platform = createPlatform(mock.wx, mock.host), bounds = platform.game.getBoundingClientRect();
+  assert.ok(Math.abs(bounds.height - 393) < 0.001);
+  assert.ok(Math.abs(bounds.left - 89.1666666667) < 0.001);
+  assert.deepEqual(platform.point({ clientX: bounds.left + bounds.width / 2, clientY: bounds.top + bounds.height / 2 }), [320, 180]);
+});
+
+test('native landscape direction moves notch insets to the correct side', () => {
+  const mock = mockWx();
+  mock.wx.getWindowInfo = () => ({ windowWidth: 852, windowHeight: 393, screenWidth: 393, screenHeight: 852, pixelRatio: 3, safeArea: { left: 0, top: 59, right: 393, bottom: 818 } });
+  const platform = createPlatform(mock.wx, mock.host);
+  mock.emit('DeviceOrientationChange', { value: 'landscape' });
+  let bounds = platform.game.getBoundingClientRect();
+  assert.ok(Math.abs(bounds.left - 89.1666666667) < 0.001, 'portrait top inset belongs on the left in normal landscape');
+  mock.emit('DeviceOrientationChange', { value: 'landscapeReverse' });
+  bounds = platform.game.getBoundingClientRect();
+  assert.ok(Math.abs(bounds.left - 64.1666666667) < 0.001, 'the notch inset moves right in reverse landscape');
+  assert.deepEqual(platform.point({ clientX: bounds.left + bounds.width / 2, clientY: bounds.top + bounds.height / 2 }), [320, 180]);
+});
+
+test('window resize uses the new event size even if the getter still reports the previous orientation', () => {
+  const mock = mockWx();
+  mock.wx.getWindowInfo = () => ({ windowWidth: 393, windowHeight: 852, screenWidth: 393, screenHeight: 852, pixelRatio: 2, safeArea: { left: 0, top: 59, right: 393, bottom: 818 } });
+  const platform = createPlatform(mock.wx, mock.host);
+  let changed;
+  platform.window.addEventListener('resize', () => { changed = platform.game.getBoundingClientRect(); });
+  mock.emit('WindowResize', { size: { windowWidth: 852, windowHeight: 393 } });
+  assert.equal(platform.display.width, 1704); assert.equal(platform.display.height, 786);
+  assert.ok(changed.width > 690); assert.ok(Math.abs(changed.height - 393) < 0.001);
+});
+
+test('returning to the game remeasures the window before resuming play', () => {
+  const mock = mockWx();
+  let info = { windowWidth: 393, windowHeight: 852, pixelRatio: 2 };
+  mock.wx.getWindowInfo = () => info;
+  const platform = createPlatform(mock.wx, mock.host);
+  mock.emit('Hide');
+  info = { windowWidth: 852, windowHeight: 393, pixelRatio: 2 };
+  let resumedWidth;
+  platform.document.addEventListener('visibilitychange', () => { if (!platform.document.hidden) resumedWidth = platform.display.width; });
+  mock.emit('Show');
+  assert.equal(resumedWidth, 1704); assert.equal(platform.display.height, 786);
+  assert.ok(Math.abs(platform.game.getBoundingClientRect().height - 393) < 0.001);
+});
+
+test('invalid safe rectangles cannot create a negative or empty drawing viewport', () => {
+  const mock = mockWx();
+  mock.wx.getWindowInfo = () => ({ windowWidth: 800, windowHeight: 450, pixelRatio: 2, safeArea: { left: 600, top: 300, right: 200, bottom: 100 } });
+  const platform = createPlatform(mock.wx, mock.host), bounds = platform.game.getBoundingClientRect();
+  assert.equal(bounds.width, 800); assert.equal(bounds.height, 450);
+  assert.deepEqual(platform.point({ clientX: 400, clientY: 225 }), [320, 180]);
 });
 
 test('WebAudio adapter normalizes native void connect and sync lifecycle, preserving PCM', async () => {
