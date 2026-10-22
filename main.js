@@ -46,7 +46,7 @@ function onUp(ev) {
   activePointerId = null;
   const [x, y] = toGame(ev);
   Object.assign(ptr, { x, y, down: false });
-  if (drag) dragEnd(x, y);
+  if (drag) { dragMove(x, y); dragEnd(x, y); }
 }
 
 function cancelInput(ev) {
@@ -89,10 +89,25 @@ function boothDown(x, y) {
   if (inBox(x, y, SPEAKER)) return callNext();
   if (S.day >= 2 && inBox(x, y, DETAIN_BTN)) return detain();
   if (S.day >= 2 && inBox(x, y, QUIZ_BTN)) return quiz();
-  for (const d of [...B.docs].reverse()) {
-    const box = d.big ? docBox(d) : [d.x, d.y, d.x + 18, d.y + 12];
+  const docs = [...B.docs].reverse();
+  // First prefer the visible paper, preserving the existing topmost-document order.
+  for (const d of docs) {
+    const box = d.big ? docBox(d) : [d.x, d.y, d.x + SMALL_DOC_W - 1, d.y + SMALL_DOC_H - 1];
     if (d.big && !inBox(x, y, DESK)) continue;
     if (inBox(x, y, box)) return dragStart(d, x, y);
+  }
+  if (!ptr.mouse) {
+    // Give fingers at least 44 CSS pixels to grab; overlapping padding chooses the nearest paper.
+    const radius = Math.max(22, 22 * W / (canvasEl.getBoundingClientRect().width || W));
+    let nearest = null, distance = Infinity;
+    for (const d of docs) {
+      if (d.big) continue;
+      const dx = x - (d.x + SMALL_DOC_W / 2), dy = y - (d.y + SMALL_DOC_H / 2);
+      if (Math.abs(dx) > radius || Math.abs(dy) > radius) continue;
+      const dist = dx * dx + dy * dy;
+      if (dist < distance) { nearest = d; distance = dist; }
+    }
+    if (nearest) return dragStart(nearest, x, y);
   }
   if (inBox(x, y, BOOK_BOX)) return toggleRules();
 }
@@ -107,7 +122,7 @@ function dragMove(x, y) {
   const d = drag.d;
   if (Math.hypot(x - drag.start[0], y - drag.start[1]) > 3) drag.moved = true;
   if (!drag.moved) return;
-  if (x < DESK[0]) { d.big = false; d.x = x - 8; d.y = y - 5; return; }
+  if (x < DESK[0]) { d.big = false; d.x = x - SMALL_DOC_W / 2; d.y = y - SMALL_DOC_H / 2; return; }
   d.big = true;
   const g = drag.startedBig ? drag.off : [Math.min(24, d.doc.w / 2), 12];
   d.x = Math.max(DESK[0] - g[0], Math.min(W - 30, x - g[0]));

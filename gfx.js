@@ -219,7 +219,7 @@ function spr(key, x, y) {
   return true;
 }
 
-// 整屏背景；英文版再贴上横幅、路牌、宪法书的英文补丁
+// 整屏背景；英文版再贴上横幅、路牌、章程书的英文补丁
 function drawBg() {
   G.drawImage(BG_IMG, 0, 0);
   if (LANG === 'en') for (let i = 0; SPR['bg:en:' + i]; i++) spr('bg:en:' + i, 0, 0);

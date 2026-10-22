@@ -211,7 +211,7 @@ function drawCloseup(g) {
   rect(x0 + bw / 2 + 2, y0, x0 + bw, y0 + bh, K.PAPER);
   rect(x0 + bw / 2 - 1, y0, x0 + bw / 2 + 1, y0 + bh, K.PAPER_D);
   spark(x0 + 24, y0 + 22, K.GOLD, false);
-  txt(x0 + 36, y0 + 16, T('CLAUDE 宪法'), 12, K.TEXT);
+  txt(x0 + 36, y0 + 16, T('CLAUDE 章程'), 12, K.TEXT);
   ['第 12 条', '入境审查依据：', 'IP 归属地、时区、', '付款地址等地区信息。'].forEach((s, i) => txt(x0 + 16, y0 + 44 + i * 16, T(s), 10, i ? K.TEXT_L : K.TEXT));
   for (let i = 0; i < 5; i++) rect(x0 + 16, y0 + 140 + i * 12, x0 + bw / 2 - 20 - (i * 13) % 40, y0 + 143 + i * 12, K.PAPER_D);
   if (lt > 0.5) ['只看地区，', '不看脸。'].forEach((s, i) => bigText(x0 + bw * 3 / 4, y0 + 64 + i * 40, T(s), 12, 2, K.RED_D));

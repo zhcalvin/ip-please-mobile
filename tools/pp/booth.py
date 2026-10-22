@@ -162,20 +162,20 @@ def draw_desk_static(img, lang="zh"):
         y += rng.randint(5, 10)
     d.rectangle([220, 128, W - 1, 131], fill=DESK_L)
     d.rectangle([PRINT_X - 4, 128, PRINT_X + 132, 130], fill=INK)
-    # 规则书（Claude 宪法）
+    # 规则书（Claude 章程）
     bx, by = 500, 306
     d.rectangle([bx + 2, by + 2, bx + 58, H - 1], fill=DESK_D)
     d.rectangle([bx, by, bx + 56, H - 1], fill=BOOK)
     d.rectangle([bx, by, bx + 4, H - 1], fill=(70, 48, 38))
     d.rectangle([bx + 7, by + 3, bx + 53, H - 1], outline=BOOK_L)
-    txt(d, (bx + 30, by + 8), "CLAUDE" if lang == "en" else "宪法", 12, GOLD, anchor="ma")
+    txt(d, (bx + 30, by + 8), "CHARTER" if lang == "en" else "章程", 10 if lang == "en" else 12, GOLD, anchor="ma")
     txt(d, (bx + 30, by + 24), "RULES" if lang == "en" else "RULEBOOK", 8, BOOK_L, anchor="ma")
     spark(d, bx + 30, by + 42, GOLD, big=False)
 
 
 @lru_cache(maxsize=2)
 def static_layer(lang="zh"):
-    """lang="en"：横幅、路牌、桌上的宪法换成英文（网页英文版用）。"""
+    """lang="en"：横幅、路牌、桌上的章程换成英文（网页英文版用）。"""
     img = Image.new("RGB", (W, H), INK)
     draw_exterior(img, lang)
     draw_booth_static(img)

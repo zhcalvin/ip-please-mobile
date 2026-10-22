@@ -121,7 +121,8 @@ function handDocs(e) {
   SFX.paper(S.day);
   if (e.spec.docs.some((d) => d.key === 'pp')) later(0.1, () => SFX.play('thud', 0.5));
   e.docs = e.spec.docs.map(({ key, doc }, i) => {
-    const inst = { doc, key, owner: 'ent', big: false, x: 48 + i * 24, y: 265, slot: [48 + i * 24, 265], marks: [] };
+    const slot = [20 + i * 36, 262];
+    const inst = { doc, key, owner: 'ent', big: false, x: slot[0], y: slot[1], slot, marks: [] };
     B.docs.push(inst);
     return inst;
   });
@@ -774,8 +775,8 @@ function hintText() {
     if (!T.called) return '点左下角闪烁的喇叭，叫下一位';
     if (!here) return '';
     const onDesk = B.docs.some((d) => d.owner === 'ent' && d.big);
-    if (!T.dragged && !onDesk) return '把柜台上的证件（左下小图标）拖到右边桌上';
-    if (!T.rules) return '点右下角的『宪法』，看今天的入境规则';
+    if (!T.dragged && !onDesk) return '按住左下证件，拖到右边桌上';
+    if (!T.rules) return '点右下角的『章程』，看今天的入境规则';
     if (!T.tray) return '点右侧的把手“<”，拉出印章栏';
     if (!T.stamped) return '把证件挪到印章正下方，按“准予”或“拒绝”';
     if (!T.returned && e.decided) return '把盖好章的证件拖回左边窗口，还给旅客';
@@ -783,13 +784,13 @@ function hintText() {
     return '';
   }
   if (!here) return '';
-  if (S.day <= 5 && !B.ruleOpened) return '今天有新规：点右下角『宪法』看看（标着 NEW）';
+  if (S.day <= 5 && !B.ruleOpened) return '今天有新规：点右下角『章程』看看（标着 NEW）';
   if (S.day === 2) {
     if (!T.inspect) return '右下『?』检查模式：点两处矛盾的信息（如国籍和时区）';
     if (!T.tell && !e.suspect && B.idx >= 3) return '证件都对得上？用『检查』点 Ta 说的话，找马脚';
     if (!T.quiz && e.suspect && e.spec.quiz) return '有疑点了：可以按柜台上的『测谎』；露馅的按『拘留』';
   }
-  if (S.day === 3 && !T.account && B.idx <= 2) return '新：账户卡。可疑的付款/账单/手机号，和宪法 §4 一起点';
+  if (S.day === 3 && !T.account && B.idx <= 2) return '新：账户卡。可疑的付款/账单/手机号，和章程 §4 一起点';
   if (S.day === 4 && !T.xray) return '新：右下『X光』扫描口袋；检查模式下可以直接点可疑物品';
   return '';
 }
@@ -818,7 +819,7 @@ function drawBooth() {
 }
 
 function drawButtons() {
-  button(RULE_BTN, '§', '宪法', !!B.ruleInst);
+  button(RULE_BTN, '§', '章程', !!B.ruleInst);
   if (S.day >= 4) button(XRAY_BTN, 'X', 'X光', B.xray.on);
   button(INSPECT_BTN, '?', '检查', B.insp.on);
 }

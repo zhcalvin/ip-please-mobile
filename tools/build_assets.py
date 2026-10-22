@@ -4,9 +4,9 @@
   pip install -r tools/requirements.txt
   python tools/build_assets.py
 
-- 字体图集：扫描根目录下所有 JS/HTML 里出现的字符，只渲染这些字（缝合像素字体 8/10/12px）
+- 字体图集：扫描根目录下所有 JS/HTML 和微信品牌名里的字符，只渲染这些字（缝合像素字体 8/10/12px）
 - 精灵图集：旅客立绘（各种表情）、证件照、背景、印章等，全部复用 pp/ 里的画法
-- 英文版：带中文的印章、对齐部圆印另出一份 `:en`；背景上的中文横幅、路牌、宪法书只出两小块补丁 `bg:en:*`
+- 英文版：带中文的印章、对齐部圆印另出一份 `:en`；背景上的中文横幅、路牌、章程书只出两小块补丁 `bg:en:*`
 产物是一个 JS 文件（图片以 base64 内嵌），所以 index.html 直接双击也能玩。
 """
 import base64
@@ -34,7 +34,7 @@ from pp.screens import _icon  # noqa: E402
 
 def used_chars():
     chars = {chr(c) for c in range(32, 127)}
-    for p in sorted(SITE.glob("*.js")) + [SITE / "index.html"]:
+    for p in sorted(SITE.glob("*.js")) + [SITE / "index.html", SITE / "wechat/client/branding.js"]:
         if p.name == "assets.js" or not p.exists():
             continue
         chars |= set(p.read_text(encoding="utf-8"))

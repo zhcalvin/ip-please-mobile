@@ -233,7 +233,7 @@ function drawAddressCard(x, y) {
   txt(x + 6, y + 20, 'PORTLAND, OR', 8, K.TEXT_L);
 }
 
-// 《Claude 宪法》：当天的入境规则，分两页。每条规则是一个可在检查模式里点选的栏位。
+// 《Claude 章程》：当天的入境规则，分两页。每条规则是一个可在检查模式里点选的栏位。
 const RULE_TABLE = [
   ['美国', 'America/*', 'en-US'], ['英国', 'Europe/London', 'en-GB'], ['日本', 'Asia/Tokyo', 'ja-JP'],
   ['德国', 'Europe/Berlin', 'de-DE'], ['新加坡', 'Asia/Singapore', 'en-SG'],
@@ -289,7 +289,7 @@ class Rulebook {
     rect(x, y, x + w - 1, y + h - 1, K.BOOK);
     rect(x + 3, y + 3, x + w - 4, y + h - 4, K.PAPER);
     rect(x + 3, y + 3, x + w - 4, y + 16, K.BOOK_L);
-    txt(x + 8, y + 5, T('宪法 · 入境规则'), 10, K.PAPER);
+    txt(x + 8, y + 5, T('章程 · 入境规则'), 10, K.PAPER);
     if (this.npages > 1) {
       rect(x + this.tab[0], y + this.tab[1], x + this.tab[2], y + this.tab[3], K.BOOK);
       txt(x + this.tab[2] - 4, y + 7, T('第{0}/{1}页 ▶', this.page + 1, this.npages), 8, K.PAPER, 'ra');
@@ -315,15 +315,18 @@ class Rulebook {
 }
 
 // 柜台上的小图标
+const SMALL_DOC_W = 30, SMALL_DOC_H = 22;
 function smallIcon(kind, color, x, y) {
   if (kind === 'book') {
-    rect(x, y, x + 18, y + 12, K.INK);
-    rect(x + 1, y + 1, x + 17, y + 11, rgb(color));
-    pt(x + 9, y + 6, K.GOLD);
+    rect(x, y, x + SMALL_DOC_W - 1, y + SMALL_DOC_H - 1, K.INK);
+    rect(x + 1, y + 1, x + SMALL_DOC_W - 2, y + SMALL_DOC_H - 2, rgb(color));
+    line(x + 4, y + 2, x + 4, y + SMALL_DOC_H - 3, K.INK);
+    spark(x + 17, y + 10, K.GOLD, false);
   } else {
     const d = color.map((c) => Math.floor(c * 0.85)), d2 = color.map((c) => Math.floor(c * 0.8));
-    rect(x, y, x + 16, y + 10, rgb(d));
-    rect(x + 1, y + 1, x + 15, y + 9, rgb(color));
-    rect(x + 3, y + 4, x + 12, y + 4, rgb(d2));
+    rect(x, y, x + SMALL_DOC_W - 1, y + SMALL_DOC_H - 1, rgb(d));
+    rect(x + 1, y + 1, x + SMALL_DOC_W - 2, y + SMALL_DOC_H - 2, rgb(color));
+    rect(x + 5, y + 7, x + SMALL_DOC_W - 6, y + 8, rgb(d2));
+    rect(x + 5, y + 13, x + SMALL_DOC_W - 10, y + 14, rgb(d2));
   }
 }

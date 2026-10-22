@@ -196,6 +196,7 @@ function loadGame(mock) {
     get S() { return S; }, get B() { return B; }, get SUM() { return SUM; },
     get now() { return now; }, set now(value) { now = value; }, get sceneT0() { return sceneT0; },
     get displayTitle() { return document.title; }, titleLabels, drawLangPick, drawTitle, drawEnd, glyph, tw,
+    get heldDocument() { return drag && drag.d; }, handDocs,
     go, chooseLang, buildQueue, startDay, newEntrant, finish, summaryClick, startRush, rushPick, rushEnd, updateClones, startClones, runTimers,
     setScene(value) { scene = value; }, setDay(value) { S.day = value; },
     forceTime(value) { now = value; }, constants: { CONTINUE_BTN, RUSH }, titleClick,
@@ -240,6 +241,46 @@ test('generated game boots without DOM/WebView and retains deterministic six-day
   for (const name of ['LICENSE', 'OFL-fusion-pixel.txt']) {
     assert.equal(fs.readFileSync(path.join(root, 'wechat/minigame/generated', name), 'utf8'), fs.readFileSync(path.join(root, name), 'utf8'), `distributed ${name} must preserve the original license notice`);
   }
+});
+
+test('counter documents can be grabbed above their visible icon without selecting a neighbor', async () => {
+  const mock = mockWx(), runtime = loadGame(mock); await tick();
+  runtime.test.chooseLang('zh'); runtime.test.setDay(3); runtime.test.go('booth');
+  const entrant = runtime.test.newEntrant(runtime.test.B.queue[0], true);
+  runtime.test.B.ent = entrant; runtime.test.handDocs(entrant);
+  assert.equal(entrant.docs.length, 3);
+  const touch = (name, x, y) => mock.emit(name, { changedTouches: [{ identifier: 1, clientX: 20 + x * 1.1875, clientY: 11.25 + y * 1.1875 }] });
+  for (const doc of entrant.docs) {
+    const before = { x: doc.x, y: doc.y };
+    touch('TouchStart', doc.x + 15, doc.y - 7);
+    assert.equal(runtime.test.heldDocument, doc, `expanded target must grab ${doc.key}`);
+    touch('TouchCancel', doc.x + 15, doc.y - 7);
+    assert.equal(runtime.test.heldDocument, null);
+    assert.deepEqual({ x: doc.x, y: doc.y }, before);
+  }
+  const first = entrant.docs[0];
+  touch('TouchStart', first.x + 27, first.y + 10);
+  assert.equal(runtime.test.heldDocument, first, 'visible paper has priority over the adjacent touch padding');
+  touch('TouchMove', 310, 188); touch('TouchEnd', 310, 188);
+  assert.equal(first.big, true); assert.equal(runtime.test.heldDocument, null);
+  assert.equal(first.marks.length, 0); assert.equal(runtime.test.B.total, 0);
+  touch('TouchStart', 130, 274);
+  assert.equal(runtime.test.heldDocument, null, 'quiz control retains its own input');
+  touch('TouchEnd', 130, 274);
+});
+
+test('drag release uses its final position even when no move event was delivered', async () => {
+  const mock = mockWx(), runtime = loadGame(mock); await tick();
+  runtime.test.chooseLang('zh'); runtime.test.go('booth');
+  const entrant = runtime.test.newEntrant(runtime.test.B.queue[0], true);
+  runtime.test.B.ent = entrant; runtime.test.handDocs(entrant);
+  const doc = entrant.docs[0];
+  const touch = (name, x, y) => mock.emit(name, { changedTouches: [{ identifier: 1, clientX: 20 + x * 1.1875, clientY: 11.25 + y * 1.1875 }] });
+  touch('TouchStart', doc.x + 8, doc.y + 5);
+  assert.equal(runtime.test.heldDocument, doc);
+  touch('TouchEnd', 310, 190);
+  assert.equal(doc.big, true, 'a quick drag must land on the desk rather than bounce back');
+  assert.equal(runtime.test.heldDocument, null); assert.equal(doc.marks.length, 0);
 });
 
 test('hooks capture ordinary, rush and clones decisions and complete exact daily settlement', async () => {

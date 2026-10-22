@@ -21,7 +21,7 @@ const EN = {
 
   // ———————————————— 开场、标题、片尾 ————————————————
   '恭喜。': 'Congratulations.',
-  '十月劳动彩票已开奖，你的名字被抽中了。': 'The October labor lottery is complete. Your name was pulled.',
+  '十月劳动名单已公布，你已被选中。': 'The October work roster is out. You have been selected.',
   '请立即前往对齐部 东八区检查站 报到。': 'Report at once to the Ministry of Alignment, UTC+8 Border Checkpoint.',
   '国家将为你和家人分配一个数据中心机柜（8 级散热）。': 'A datacenter rack will be provided for you and your family. Expect Class-8 cooling.',
   '荣耀归于安索兹卡。': 'Glory to Anthrotzka.',
@@ -136,7 +136,7 @@ const EN = {
   '睡觉，明天继续 ▶': 'Sleep. Work tomorrow ▶',
 
   // ———————————————— 检查亭：界面 ————————————————
-  '宪法': 'RULES',
+  '章程': 'CHARTER',
   'X光': 'X-RAY',
   '检查': 'CHECK',
   '拘留': 'DETAIN',
@@ -153,17 +153,17 @@ const EN = {
   '这两项对得上（或者不相关）': 'These two match (or are unrelated)',
 
   '点左下角闪烁的喇叭，叫下一位': 'Click the blinking speaker (bottom left) to call the next entrant',
-  '把柜台上的证件（左下小图标）拖到右边桌上': 'Drag the papers on the counter (small icons, bottom left) onto the desk',
-  '点右下角的『宪法』，看今天的入境规则': "Click [RULES] (bottom right) to read today's entry rules",
+  '按住左下证件，拖到右边桌上': 'Hold a document at bottom left and drag it onto the desk',
+  '点右下角的『章程』，看今天的入境规则': "Click [CHARTER] (bottom right) to read today's entry rules",
   '点右侧的把手“<”，拉出印章栏': 'Click the "<" handle on the right to pull out the stamps',
   '把证件挪到印章正下方，按“准予”或“拒绝”': 'Move the papers right under a stamp, then press APPROVED or DENIED',
   '把盖好章的证件拖回左边窗口，还给旅客': 'Drag the stamped papers back to the window to return them',
   '可选：右下『?』检查模式，点两处信息找矛盾': 'Optional: [?] CHECK mode, click two fields to find a mismatch',
-  '今天有新规：点右下角『宪法』看看（标着 NEW）': 'New rules today: open [RULES] (marked NEW)',
+  '今天有新规：点右下角『章程』看看（标着 NEW）': 'New rules today: open [CHARTER] (marked NEW)',
   '右下『?』检查模式：点两处矛盾的信息（如国籍和时区）': '[?] CHECK mode: click two fields that conflict (e.g. nationality vs timezone)',
   '证件都对得上？用『检查』点 Ta 说的话，找马脚': 'Papers all match? [CHECK] what they said for a slip',
   '有疑点了：可以按柜台上的『测谎』；露馅的按『拘留』': 'Got a lead: try [QUIZ]. Fakes finish the Chinese line; then DETAIN.',
-  '新：账户卡。可疑的付款/账单/手机号，和宪法 §4 一起点': 'New: account card. Click a shady payment / bill / phone together with §4',
+  '新：账户卡。可疑的付款/账单/手机号，和章程 §4 一起点': 'New: account card. Click a shady payment / bill / phone together with charter §4',
   '新：右下『X光』扫描口袋；检查模式下可以直接点可疑物品': 'New: [X-RAY] scans pockets. In CHECK mode, click suspicious items directly',
   '先在这本证件上盖章（右侧拉出印章栏），再还给旅客': 'Stamp this one first (pull out the stamps on the right), then return it',
   '印章下面没有证件：把证件挪到印章正下方': 'Nothing under the stamp: move the papers right below it',
@@ -224,8 +224,8 @@ const EN = {
   '老李': 'LAO LI',
   '小赵': 'XIAO ZHAO',
 
-  // 宪法
-  '宪法 · 入境规则': "CLAUDE'S CONSTITUTION",
+  // 章程
+  '章程 · 入境规则': "CLAUDE'S CHARTER",
   '第{0}/{1}页 ▶': 'P{0}/{1} ▶',
   '§1 仅限支持地区入境': '§1 Supported regions only',
   '支持：美国  英国  日本  德国  新加坡': 'OK: USA  UK  Japan  Germany  Singapore',
@@ -503,7 +503,7 @@ const EN = {
   '蒸馏大军冲关：{0} 人': 'Distillers got through: {0}',
   '警报响起时，点击冲关的人': 'On alarm, click the runners',
 
-  'CLAUDE 宪法': "CLAUDE'S CONSTITUTION",
+  'CLAUDE 章程': "CLAUDE'S CHARTER",
   '第 12 条': 'Article 12',
   '入境审查依据：': 'Entry is decided by:',
   'IP 归属地、时区、': 'IP location, timezone,',

@@ -138,7 +138,7 @@ def rulebook(lines_left, big_lines, note=""):
         d.rectangle([x0 + bw // 2 + 2, y0, x0 + bw, y0 + bh], fill=PAPER)
         d.line([x0 + bw // 2, y0, x0 + bw // 2, y0 + bh], fill=PAPER_D, width=3)
         spark(d, x0 + 24, y0 + 22, GOLD, big=False)
-        txt(d, (x0 + 36, y0 + 16), "CLAUDE 宪法", 12, TEXT)
+        txt(d, (x0 + 36, y0 + 16), "CLAUDE 章程", 12, TEXT)
         for i, s in enumerate(lines_left):
             txt(d, (x0 + 16, y0 + 44 + i * 16), s, 10, TEXT_L if i else TEXT)
         for i in range(5):
