@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="media/logo.png" width="160" alt="IP, PLEASE">
+  <img src="media/logo.png" width="160" alt="游戏徽章">
 </p>
 
 <h1 align="center">IP, PLEASE Mobile · 请出示你的 IP</h1>

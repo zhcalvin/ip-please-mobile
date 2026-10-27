@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="media/logo.png" width="160" alt="IP, PLEASE">
+  <img src="media/logo.png" width="160" alt="Game emblem">
 </p>
 
 <h1 align="center">IP, PLEASE Mobile</h1>
