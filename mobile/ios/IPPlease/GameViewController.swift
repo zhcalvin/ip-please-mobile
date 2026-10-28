@@ -1,5 +1,6 @@
 import UIKit
 import WebKit
+import AVFAudio
 
 final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
     private let backgroundColor = UIColor(red: 22 / 255, green: 19 / 255, blue: 19 / 255, alpha: 1)
@@ -7,6 +8,7 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
     private var webRoot: URL?
     private var isPaused = true
     private var contentRulesReady = false
+    private var playbackRevision = 0
 
     override var prefersStatusBarHidden: Bool { true }
     override var prefersHomeIndicatorAutoHidden: Bool { true }
@@ -21,7 +23,8 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .default()
         configuration.allowsInlineMediaPlayback = true
-        configuration.mediaTypesRequiringUserActionForPlayback = .all
+        // The bundled game still creates WebAudio only from a player gesture.
+        configuration.mediaTypesRequiringUserActionForPlayback = []
         configuration.userContentController.addUserScript(WKUserScript(
             source: "window.__IP_PLEASE_NATIVE__ = true; window.__IP_PLEASE_NATIVE_PAUSED__ = true;",
             injectionTime: .atDocumentStart,
@@ -75,12 +78,41 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
     func setPaused(_ paused: Bool) {
         isPaused = paused
         guard isViewLoaded else { return }
+        playbackRevision += 1
+        let revision = playbackRevision
+        if paused {
+            updateGamePause(true)
+            webView.setAllMediaPlaybackSuspended(true) { [weak self] in
+                guard let self, self.playbackRevision == revision, self.isPaused else { return }
+                try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+            }
+        } else {
+            activateGameAudio()
+            // WebKit blocks page/user resume attempts until this native gate is open.
+            webView.setAllMediaPlaybackSuspended(false) { [weak self] in
+                guard let self, self.playbackRevision == revision, !self.isPaused else { return }
+                self.updateGamePause(false)
+            }
+        }
+    }
+
+    private func activateGameAudio() {
+        do {
+            let session = AVAudioSession.sharedInstance()
+            // Foreground game audio should remain audible with the Silent switch on.
+            try session.setCategory(.playback, mode: .default, options: .mixWithOthers)
+            try session.setActive(true)
+        } catch {
+            NSLog("Unable to activate game audio session: %@", String(describing: error))
+        }
+    }
+
+    private func updateGamePause(_ paused: Bool) {
         let value = paused ? "true" : "false"
         webView.evaluateJavaScript("""
         window.__IP_PLEASE_NATIVE_PAUSED__ = \(value);
         if (typeof window.setNativePaused === 'function') window.setNativePaused(\(value));
         """)
-        webView.setAllMediaPlaybackSuspended(paused, completionHandler: nil)
     }
 
     private func loadGame() {

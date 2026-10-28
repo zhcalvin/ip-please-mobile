@@ -71,6 +71,8 @@ node tools/mobile.mjs ios-device
 
 真机安装：先执行 `node tools/mobile.mjs prepare`，再打开 `mobile/ios/IPPlease.xcodeproj`，选择 `IPPlease` target，在 **Signing & Capabilities** 中选择自己的 Team / Bundle Identifier，选择连接的设备后运行。App Store / TestFlight 分发需要相应开发者账号及签名配置，再在 Xcode 中 Archive / Distribute。
 
+iPhone 在首次点击后启动音效与循环背景音乐，“声音”按钮同时控制两者。前台音频使用播放会话，可在系统静音开关打开时发声；切后台会暂停，返回后先解除 WebKit 媒体暂停再恢复游戏音频。左下桌铃用于叫下一位，右下章程、X 光和检查按钮采用更大的高对比文字与点击区域。
+
 可将模拟器 App 安装到已经启动的模拟器：
 
 ```bash

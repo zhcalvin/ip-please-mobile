@@ -4,6 +4,7 @@
 const SFX = (() => {
   const SR = 44100;
   let ac = null, master = null, ambGain = null, ambSrc = null, muted = false, paused = false;
+  let ambientWanted = false, musicSrc = null, musicGain = null, musicQueued = false, musicScene = 'boot';
   const cache = new Map();
 
   const N = (d) => Math.max(1, Math.floor(d * SR));
@@ -357,6 +358,45 @@ const SFX = (() => {
     return norm(out, 0.6);
   }
 
+  // A lighter continuous arrangement of the same original melody. Synthesize at
+  // 16 kHz, then interpolate once, keeping the first interaction responsive.
+  function backgroundMusic() {
+    const rate = 16000, beat = 60 / 104, bar = beat * 4, duration = bar * THEME.length;
+    const low = new Float32Array(Math.ceil(duration * rate) + 1);
+    const note = (midi, start, dur, gain) => {
+      const offset = Math.floor(start * rate), count = Math.floor(dur * rate);
+      const attack = Math.min(count / 3, rate * 0.012), release = Math.min(count / 3, rate * 0.06);
+      const increment = mf(midi) / rate;
+      let ph = 0;
+      for (let i = 0; i < count && offset + i < low.length; i++) {
+        ph += increment; if (ph >= 1) ph -= 1;
+        const wave = ph < 0.5 ? ph * 4 - 1 : 3 - ph * 4;
+        const env = (i < attack ? i / attack : 1) * (i > count - release ? (count - i) / release : 1);
+        low[offset + i] += wave * env * gain;
+      }
+    };
+    THEME.forEach((melody, index) => {
+      const start = index * bar, [root, chord] = CHORDS[index];
+      let t = start;
+      for (const [midi, beats] of melody) {
+        if (midi) note(midi, t, beats * beat * 0.9, 0.25);
+        t += beats * beat;
+      }
+      for (let k = 0; k < 4; k++) note(k % 2 ? root + 7 : root, start + k * beat, beat * 0.6, 0.15);
+      for (const midi of chord) note(midi - 12, start, bar * 0.94, 0.035);
+    });
+    const edge = Math.floor(rate * 0.04);
+    for (let i = 0; i < edge; i++) { low[i] *= i / edge; low[low.length - 1 - i] *= i / edge; }
+    let peak = 0.001;
+    for (const sample of low) { const value = sample < 0 ? -sample : sample; if (value > peak) peak = value; }
+    const out = new Float32Array(N(duration)), ratio = rate / SR, gain = 0.5 / peak;
+    for (let i = 0; i < out.length; i++) {
+      const pos = i * ratio, index = pos | 0, frac = pos - index;
+      out[i] = (low[index] + ((low[index + 1] || 0) - low[index]) * frac) * gain;
+    }
+    return out;
+  }
+
   function dayHit() {
     const out = new Float32Array(N(1.6));
     for (let r = 0; r < 10; r++) place(out, r * 0.05, kick(), 0.15 + r * 0.03);
@@ -399,6 +439,7 @@ const SFX = (() => {
     stamp_deny: () => stamp('deny'), stamp_approve: () => stamp('approve'),
     title: () => march([0, 1, 2, 3]),
     end: () => march([4, 5, 6, 7]),
+    music: backgroundMusic,
     sad: () => norm(march([6, 7], 84, false, 0.8, 2.0), 0.4),
     day_hit: dayHit,
     fight: () => crowdFight(3.0),
@@ -419,25 +460,76 @@ const SFX = (() => {
     src.buffer = b;
     const g = ac.createGain();
     g.gain.value = gain;
-    src.connect(g).connect(master);
+    src.connect(g);
+    g.connect(master);
     src.start(ac.currentTime + when);
     return src;
   }
 
+  const musicLevel = () => musicScene === 'booth' ? 0.13 : ['summary', 'over'].includes(musicScene) ? 0.12 : 0.23;
+
+  function resumeContext() {
+    if (ac && !paused && ac.state !== 'running') {
+      // Call during the first tap as well as later taps; iOS can report "interrupted".
+      try { Promise.resolve(ac.resume()).catch(() => {}); } catch (e) { /* Retry on the next gesture. */ }
+    }
+  }
+
+  function syncAmbient() {
+    if (!ac) return;
+    if (ambientWanted && !ambSrc) {
+      ambSrc = ac.createBufferSource();
+      ambSrc.buffer = buffer('ambient', ambient);
+      ambSrc.loop = true;
+      ambGain = ac.createGain();
+      ambGain.gain.value = 0.8; // The master gain alone handles mute for every sound bus.
+      ambSrc.connect(ambGain);
+      ambGain.connect(master);
+      ambSrc.start();
+    } else if (!ambientWanted && ambSrc) {
+      ambSrc.stop();
+      ambSrc = null;
+      ambGain = null;
+    }
+  }
+
+  function syncMusic() {
+    if (musicGain) musicGain.gain.value = musicLevel();
+    if (!ac || musicSrc || musicQueued || paused || muted) return;
+    musicQueued = true;
+    // Let the first tap and its effect render before synthesizing the longer score.
+    setTimeout(() => {
+      musicQueued = false;
+      if (!ac || musicSrc || paused || muted) return;
+      musicSrc = ac.createBufferSource();
+      musicSrc.buffer = buffer('music');
+      musicSrc.loop = true;
+      musicGain = ac.createGain();
+      musicGain.gain.value = musicLevel();
+      musicSrc.connect(musicGain);
+      musicGain.connect(master);
+      musicSrc.start();
+    }, 0);
+  }
+
   const api = {
     init() {
-      if (ac) { if (!paused && ac.state === 'suspended') ac.resume().catch(() => {}); return; }
+      if (ac) { resumeContext(); syncAmbient(); syncMusic(); return; }
       const AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return;
       ac = new AC();
-      if (paused) ac.suspend().catch(() => {});
+      if (paused) Promise.resolve(ac.suspend()).catch(() => {});
       const comp = ac.createDynamicsCompressor();
       master = ac.createGain();
-      master.gain.value = 0.9;
-      master.connect(comp).connect(ac.destination);
+      master.gain.value = muted ? 0 : 0.9;
+      master.connect(comp);
+      comp.connect(ac.destination);
+      resumeContext();
+      syncAmbient();
+      syncMusic();
       // 空闲时把常用音效先合成好，避免第一次播放卡顿
       const warm = ['click', 'select', 'stamp_deny', 'stamp_approve', 'tray', 'tray_back', 'discrepancy', 'inspect_on',
-        'inspect_off', 'thud', 'intercom', 'citation', 'detain', 'scuffle', 'day_hit', 'whoosh', 'sad', 'bell',
+        'inspect_off', 'thud', 'intercom', 'citation', 'detain', 'scuffle', 'day_hit', 'whoosh', 'bell',
         'xray', 'gunshot'];
       let i = 0;
       const step = () => { if (i < warm.length) { buffer(warm[i++]); setTimeout(step, 30); } };
@@ -458,28 +550,21 @@ const SFX = (() => {
     },
     printer(dur) { if (ac) playBuf(buffer('printer' + dur, () => printer(dur))); },
     ambient(on) {
-      if (!ac) return;
-      if (on && !ambSrc) {
-        ambSrc = ac.createBufferSource();
-        ambSrc.buffer = buffer('ambient', ambient);
-        ambSrc.loop = true;
-        ambGain = ac.createGain();
-        ambGain.gain.value = muted ? 0 : 0.8;
-        ambSrc.connect(ambGain).connect(master);
-        ambSrc.start();
-      } else if (!on && ambSrc) {
-        ambSrc.stop();
-        ambSrc = null;
-      }
+      ambientWanted = !!on;
+      syncAmbient();
     },
+    music(scene) { musicScene = scene; syncMusic(); },
     stop(src) { try { if (src) src.stop(); } catch (e) { /* 已经停了 */ } },
     setPaused(value) {
       paused = !!value;
-      if (ac) (paused ? ac.suspend() : ac.resume()).catch(() => {});
+      if (ac && paused) Promise.resolve(ac.suspend()).catch(() => {});
+      else resumeContext();
+      syncMusic();
     },
     toggleMute() {
       muted = !muted;
       if (master) master.gain.value = muted ? 0 : 0.9;
+      syncMusic();
       return muted;
     },
     get muted() { return muted; },

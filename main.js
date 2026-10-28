@@ -5,11 +5,10 @@ function go(name) {
   scene = name; sceneT0 = now;
   lastKey = -1;
   SFX.ambient(name === 'booth');
-  if (name === 'title') SFX.play('title', 0.8);
+  SFX.music(name);
   if (name === 'daycard') SFX.play('day_hit');
   if (name === 'news') { SFX.play('whoosh'); SFX.paper(31); }
-  if (name === 'summary') { SFX.play('sad', 0.9); initSummary(); }
-  if (name === 'end') SFX.play('end', 0.8);
+  if (name === 'summary') initSummary();
   if (name === 'booth') startDay();
 }
 

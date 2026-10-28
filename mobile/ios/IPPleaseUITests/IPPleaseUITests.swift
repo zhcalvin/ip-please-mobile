@@ -28,6 +28,7 @@ final class IPPleaseUITests: XCTestCase {
         }
 
         Thread.sleep(forTimeInterval: 1)
+        capture("iOS opening without credit footer")
         point(228, 172).tap() // Choose Chinese.
         XCTAssertTrue(app.buttons["声音：开"].waitForExistence(timeout: 5))
         Thread.sleep(forTimeInterval: 0.7)
@@ -39,12 +40,20 @@ final class IPPleaseUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 3)
         point(320, 180).tap() // Leave the newspaper and enter the booth.
         Thread.sleep(forTimeInterval: 0.5)
-        point(15, 298).tap() // Call the first entrant.
+        point(36, 312).tap() // Press the enlarged next-entrant bell.
         Thread.sleep(forTimeInterval: 5)
         capture("iOS first entrant")
-        point(56, 271).press(forDuration: 0.2, thenDragTo: point(344, 200))
+        point(35, 273).press(forDuration: 0.2, thenDragTo: point(344, 200))
         Thread.sleep(forTimeInterval: 0.5)
         capture("iOS document dragged onto desk")
+        point(484, 330).tap() // Open the enlarged, clearer charter control.
+        Thread.sleep(forTimeInterval: 0.3)
+        capture("iOS readable charter and bell")
+        point(484, 330).tap()
+        point(608, 330).tap() // Enter and leave inspection without disturbing the paper.
+        Thread.sleep(forTimeInterval: 0.3)
+        capture("iOS readable inspection control")
+        point(608, 330).tap()
 
         XCUIDevice.shared.press(.home)
         Thread.sleep(forTimeInterval: 1)

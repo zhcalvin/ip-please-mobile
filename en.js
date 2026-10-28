@@ -152,7 +152,8 @@ const EN = {
   '没有发现不符': 'No discrepancy',
   '这两项对得上（或者不相关）': 'These two match (or are unrelated)',
 
-  '点左下角闪烁的喇叭，叫下一位': 'Click the blinking speaker (bottom left) to call the next entrant',
+  '点左下角闪烁的铃铛，叫下一位': 'Tap the blinking bell (bottom left) to call the next entrant',
+  '下一位': 'NEXT',
   '按住左下证件，拖到右边桌上': 'Hold a document at bottom left and drag it onto the desk',
   '点右下角的『章程』，看今天的入境规则': "Click [CHARTER] (bottom right) to read today's entry rules",
   '点右侧的把手“<”，拉出印章栏': 'Click the "<" handle on the right to pull out the stamps',

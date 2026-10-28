@@ -136,6 +136,4 @@ function drawLangPick() {
   }
   txt(W / 2, 302, '建议横屏、打开声音 · 鼠标或手指拖动证件 · 全程约 30 分钟', 8, K.GREY, 'ma');
   txt(W / 2, 313, 'Landscape + sound on · Drag papers with mouse or finger · About 30 min', 8, K.GREY, 'ma');
-  txt(W / 2, 332, '致敬 Lucas Pope《Papers, Please》 · 画面音效均由程序生成', 8, K.GREY_D, 'ma');
-  txt(W / 2, 343, "A tribute to Lucas Pope's Papers, Please · All art and sound made by code", 8, K.GREY_D, 'ma');
 }

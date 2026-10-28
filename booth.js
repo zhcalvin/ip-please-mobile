@@ -2,19 +2,19 @@
 // 检查亭：旅客进出、证件、盖章、检查模式、测谎、X 光。画面布局沿用 pp/booth.py 的坐标。
 
 const WIN = [8, 134, 210, 262], WIN_W = 203, WIN_H = 129, WIN_CX = 101;
-const SPEAKER = [6, 290, 24, 306];
+const SPEAKER = [8, 286, 64, 338];
 const DETAIN_BTN = [172, 268, 212, 280];
 const QUIZ_BTN = [126, 268, 166, 280];
-const INSPECT_BTN = [602, 322, 634, 354];
-const XRAY_BTN = [566, 322, 598, 354];
-const RULE_BTN = [530, 322, 562, 354];
+const INSPECT_BTN = [580, 304, 636, 356];
+const XRAY_BTN = [518, 304, 574, 356];
+const RULE_BTN = [456, 304, 512, 356];
 const ASK_BTN = [548, 140, 590, 162];
 const BANNER_BOX = [300, 134, 598, 168];
 const TRAY_Y0 = 196, TRAY_Y1 = 252, TRAY_W = 170, TRAY_X = W - TRAY_W;
 const MARK_XY = { approve: [483, 220], deny: [562, 220] };
 const BOOTH_POS = [312, 117], QUEUE_FRONT = [292, 102];
 const PRINT_X = 240;
-const BOOK_BOX = [500, 306, 556, 359];
+const BOOK_BOX = RULE_BTN;
 const DESK = [220, 128, W - 1, H - 1];
 const BANNER1_X = 70;
 
@@ -98,9 +98,9 @@ const isEvent = (it) => it && it.type;
 function callNext() {
   SFX.play('click');
   if (B.ent || B.event || B.cut || B.closeup || B.ending || B.idx >= B.queue.length) return;
+  SFX.play('bell', 0.65);
   if (isEvent(nextItem())) { startEvent(B.queue[B.idx++]); return; }
   B.speakerT = now;
-  SFX.play('intercom', 1, 0.03);
   say('C', '下一位！');
   S.tut.called = true;
   const spec = B.queue[B.idx++];
@@ -394,12 +394,26 @@ function docBox(d) { return [d.x, d.y, d.x + d.doc.w - 1, d.y + d.doc.h - 1]; }
 
 // 对话框（左下角最近三句）的位置，绘制和检查模式共用
 function lineBoxes() {
-  return B.lines.slice(-3).map((ln, i) => {
-    let size = tw(ln.text, 12) > 176 ? 10 : 12;
-    if (LANG === 'en' && size === 10 && tw(ln.text, 10) > 178) size = 8;
-    const y = 288 + i * 17;
-    return { ln, size, box: [30, y, 30 + tw(ln.text, size) + 8, y + 15] };
-  });
+  const layout = (ln, size) => {
+    const lineHeight = size + 1;
+    const lines = wrap(ln.text, size, 134).slice(0, Math.floor(49 / lineHeight));
+    return { ln, size, lines, lineHeight, height: Math.max(size + 4, lines.length * lineHeight + 3) };
+  };
+  const entries = B.lines.slice(-3).map(ln => layout(ln, tw(ln.text, 12) <= 134 ? 12 : 10));
+  while (entries.reduce((height, entry) => height + entry.height + 1, -1) > 53) {
+    const candidate = entries.filter(entry => entry.size > 8).sort((a, b) => b.height - a.height)[0];
+    if (!candidate) break;
+    entries[entries.indexOf(candidate)] = layout(candidate.ln, candidate.size === 12 ? 10 : 8);
+  }
+  const out = [];
+  let bottom = 338;
+  for (const { height, ...entry } of entries.reverse()) {
+    if (bottom - height + 1 < 286) break;
+    const width = Math.min(142, Math.max(12, ...entry.lines.map(line => tw(line, entry.size))) + 8);
+    out.unshift({ ...entry, box: [72, bottom - height + 1, 72 + width, bottom] });
+    bottom -= height + 1;
+  }
+  return out;
 }
 
 function fieldAt(x, y) {
@@ -675,26 +689,42 @@ function button(box, glyph, label, active) {
   const [x0, y0, x1, y1] = box;
   rect(x0 + 2, y0 + 2, x1 + 2, y1 + 2, K.DESK_D);
   rect(x0, y0, x1, y1, active ? K.RED_D : K.METAL_D);
-  outline(x0, y0, x1, y1, K.METAL_L);
-  txt((x0 + x1) >> 1, y0 + 6, glyph, 12, K.WHITE, 'ma');
-  txt((x0 + x1) >> 1, y0 + 21, T(label), 8, active ? K.WHITE : K.GREY, 'ma');
+  outline(x0, y0, x1, y1, active ? K.CLAUDE_L : K.METAL_L);
+  bigText((x0 + x1) >> 1, y0 + 7, glyph, 8, 2, K.WHITE);
+  txt((x0 + x1) >> 1, y0 + 33, T(label), 12, K.WHITE, 'ma');
+}
+
+function drawDeskBell(on) {
+  const [x0, y0, x1, y1] = SPEAKER, cx = (x0 + x1) >> 1;
+  rect(x0 + 2, y0 + 2, x1 + 2, y1 + 2, K.INK);
+  rect(x0, y0, x1, y1, on ? K.BOOK : K.METAL_D);
+  outline(x0, y0, x1, y1, on ? K.CLAUDE_L : K.METAL_L);
+  rect(cx - 3, y0 + 5, cx + 3, y0 + 8, K.GOLD);
+  rect(cx - 1, y0 + 9, cx + 1, y0 + 12, K.GOLD);
+  rect(cx - 7, y0 + 13, cx + 7, y0 + 15, K.GOLD);
+  rect(cx - 11, y0 + 16, cx + 11, y0 + 19, K.GOLD);
+  rect(cx - 14, y0 + 20, cx + 14, y0 + 27, K.GOLD);
+  rect(cx - 10, y0 + 17, cx - 7, y0 + 24, K.CLAUDE_L);
+  rect(cx - 18, y0 + 28, cx + 18, y0 + 31, on ? K.CLAUDE_L : K.GOLD);
+  rect(cx - 20, y0 + 32, cx + 20, y0 + 34, K.INK);
+  txt(cx, y0 + 38, T('下一位'), 12, K.WHITE, 'ma');
 }
 
 function drawBoothLower() {
   const idle = !B.ent && !B.event && B.idx < B.queue.length && !B.ending && !isEvent(nextItem());
   const on = now < B.speakerT + 0.5 || (idle && Math.floor(now * 2) % 2 === 0);
-  const [x0, y0] = SPEAKER;
-  rect(x0, y0, x0 + 18, y0 + 16, on ? K.CLAUDE : K.METAL_D);
-  outline(x0, y0, x0 + 18, y0 + 16, K.METAL_L);
-  for (let yy = y0 + 3; yy < y0 + 15; yy += 3) rect(x0 + 3, yy, x0 + 15, yy, K.INK);
+  drawDeskBell(on);
   const cps = LANG === 'en' ? 50 : 26;
-  for (const { ln, size, box } of lineBoxes()) {
-    const n = Math.max(1, Math.floor((now - ln.t) * cps));
+  for (const { ln, size, box, lines, lineHeight } of lineBoxes()) {
+    let n = Math.max(1, Math.floor((now - ln.t) * cps));
     const [x0, y] = box;
     rect(...box, 'rgb(30,28,26)');
     outline(...box, 'rgb(76,70,64)');
-    if (ln.who === 'C') rect(x0, y, x0 + 1, y + 15, K.CLAUDE);
-    txt(35, y + (size === 12 ? 2 : size === 10 ? 3 : 4), ln.text, size, ln.who === 'C' ? K.CLAUDE_L : K.WHITE, 'la', n);
+    if (ln.who === 'C') rect(x0, y, x0 + 1, box[3], K.CLAUDE);
+    lines.forEach((line, i) => {
+      txt(x0 + 4, y + 2 + i * lineHeight, line, size, ln.who === 'C' ? K.CLAUDE_L : K.WHITE, 'la', n);
+      n -= [...line].length;
+    });
   }
   txt(8, 347, `${DATES[S.day]}  ${T(WEEKDAYS[S.day])}`, 10, K.GREY);
   const m = 6 * 60 + Math.floor((now - B.clock0) / 1.1);
@@ -772,7 +802,7 @@ function hintText() {
   if (B.flash && now < B.flash.t + 3.2) return B.flash.text;
   const e = B.ent, here = e && e.phase === 'here' && e.handed && !B.event, T = S.tut;
   if (S.day === 1) {
-    if (!T.called) return '点左下角闪烁的喇叭，叫下一位';
+    if (!T.called) return '点左下角闪烁的铃铛，叫下一位';
     if (!here) return '';
     const onDesk = B.docs.some((d) => d.owner === 'ent' && d.big);
     if (!T.dragged && !onDesk) return '按住左下证件，拖到右边桌上';
@@ -819,6 +849,7 @@ function drawBooth() {
 }
 
 function drawButtons() {
+  rect(448, 300, W - 1, H - 1, K.DESK);
   button(RULE_BTN, '§', '章程', !!B.ruleInst);
   if (S.day >= 4) button(XRAY_BTN, 'X', 'X光', B.xray.on);
   button(INSPECT_BTN, '?', '检查', B.insp.on);
@@ -836,7 +867,7 @@ function composeInspect(g) {
     if (d.big) lighten([Math.max(DESK[0], d.x), Math.max(DESK[1], d.y), Math.min(W, d.x + d.doc.w), Math.min(H, d.y + d.doc.h)]);
   }
   if (B.xray.on) lighten([WIN[0], WIN[1], WIN[2] + 1, WIN[3] + 1]);
-  if (B.ent && B.ent.handed) lighten([28, 286, 220, 339]);   // 对话框也亮着，方便点旅客说的话
+  if (B.ent && B.ent.handed) lighten([70, 284, 218, 341]);   // 对话框也亮着，方便点旅客说的话
   let boxes = I.sel.map((s) => s.box());
   if (I.all && B.ent) {
     boxes = [];
